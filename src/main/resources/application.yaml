@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: software-estimation-api
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/estimation_db}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:root}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        default_schema: estimation
+        jdbc:
+          time_zone: UTC
+  flyway:
+    schemas: estimation
+    default-schema: estimation
+    create-schemas: true
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+estimation:
+  cors:
+    allowed-origins: ${ESTIMATION_CORS_ALLOWED_ORIGINS:http://localhost:3000}
