@@ -1,7 +1,7 @@
-package com.intecx.estimation.exception;
+package com.intecx.inscope.exception;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import lombok.Value;
 
 @Value
@@ -20,13 +20,14 @@ public class ErrorResponse {
     @Schema(example = "GET http://localhost:8080/api/v1/projects/42")
     String path;
 
-    Instant timestamp;
+    LocalDateTime timestamp;
 
     public ErrorResponse(int code, String message, String cause, String path) {
         this.code = code;
         this.message = message;
         this.cause = cause;
         this.path = path;
-        this.timestamp = Instant.now();
+        this.timestamp = LocalDateTime.now();
     }
 }
+

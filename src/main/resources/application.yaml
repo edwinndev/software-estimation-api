@@ -1,23 +1,36 @@
+server:
+  port: ${SERVER_PORT}
+
 spring:
   application:
-    name: software-estimation-api
+    name: in-scope
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/estimation_db}
-    username: ${SPRING_DATASOURCE_USERNAME:postgres}
-    password: ${SPRING_DATASOURCE_PASSWORD:root}
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
   jpa:
     open-in-view: false
     hibernate:
       ddl-auto: none
     properties:
       hibernate:
-        default_schema: estimation
-        jdbc:
-          time_zone: UTC
+        default_schema: in_scope
   flyway:
-    schemas: estimation
-    default-schema: estimation
+    schemas: in_scope
+    default-schema: in_scope
     create-schemas: true
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${SPRING_MAIL_USERNAME}
+    password: ${SPRING_MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
 springdoc:
   api-docs:
@@ -25,6 +38,10 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
-estimation:
+in-scope:
   cors:
-    allowed-origins: ${ESTIMATION_CORS_ALLOWED_ORIGINS:http://localhost:3000}
+    allowed-origins: ${IN_SCOPE_CORS_ALLOWED_ORIGINS}
+  jwt:
+    secret: ${IN_SCOPE_JWT_SECRET}
+    expiration-ms: ${IN_SCOPE_JWT_EXPIRATION_MS}
+    refresh-expiration-ms: ${IN_SCOPE_JWT_REFRESH_EXPIRATION_MS}

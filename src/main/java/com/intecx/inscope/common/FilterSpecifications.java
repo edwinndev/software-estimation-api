@@ -1,8 +1,8 @@
-package com.intecx.estimation.common;
+package com.intecx.inscope.common;
 
-import com.intecx.estimation.common.FilterValues.Kind;
-import com.intecx.estimation.common.FilterValues.Range;
-import com.intecx.estimation.exception.BadRequestException;
+import com.intecx.inscope.common.FilterValues.Kind;
+import com.intecx.inscope.common.FilterValues.Range;
+import com.intecx.inscope.exception.BadRequestException;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Path;

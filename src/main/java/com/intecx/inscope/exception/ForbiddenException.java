@@ -1,4 +1,4 @@
-package com.intecx.estimation.exception;
+package com.intecx.inscope.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

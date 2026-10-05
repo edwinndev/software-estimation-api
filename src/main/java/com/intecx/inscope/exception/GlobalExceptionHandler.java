@@ -1,4 +1,4 @@
-package com.intecx.estimation.exception;
+package com.intecx.inscope.exception;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;

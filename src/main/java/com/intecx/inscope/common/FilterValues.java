@@ -1,8 +1,8 @@
-package com.intecx.estimation.common;
+package com.intecx.inscope.common;
 
 import static java.util.Map.entry;
 
-import com.intecx.estimation.exception.BadRequestException;
+import com.intecx.inscope.exception.BadRequestException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Instant;

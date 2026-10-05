@@ -1,4 +1,4 @@
-package com.intecx.estimation.common;
+package com.intecx.inscope.common;
 
 import java.util.List;
 import java.util.function.Function;

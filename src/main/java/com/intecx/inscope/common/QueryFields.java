@@ -1,6 +1,6 @@
-package com.intecx.estimation.common;
+package com.intecx.inscope.common;
 
-import com.intecx.estimation.exception.BadRequestException;
+import com.intecx.inscope.exception.BadRequestException;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;

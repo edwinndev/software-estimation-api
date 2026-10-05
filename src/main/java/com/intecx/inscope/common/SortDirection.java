@@ -1,4 +1,4 @@
-package com.intecx.estimation.common;
+package com.intecx.inscope.common;
 
 import org.springframework.data.domain.Sort;
 

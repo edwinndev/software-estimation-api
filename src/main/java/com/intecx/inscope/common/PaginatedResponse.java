@@ -1,4 +1,4 @@
-package com.intecx.estimation.common;
+package com.intecx.inscope.common;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;

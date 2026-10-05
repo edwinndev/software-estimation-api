@@ -1,4 +1,4 @@
-package com.intecx.estimation.config;
+package com.intecx.inscope.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -12,7 +12,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     private final String[] allowedOrigins;
 
-    public WebConfig(@Value("${estimation.cors.allowed-origins}") String[] allowedOrigins) {
+    public WebConfig(@Value("${in-scope.cors.allowed-origins}") String[] allowedOrigins) {
         this.allowedOrigins = allowedOrigins;
     }
 
@@ -25,3 +25,5 @@ public class WebConfig implements WebMvcConfigurer {
                 .maxAge(CORS_MAX_AGE_SECONDS);
     }
 }
+
+
