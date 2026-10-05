@@ -21,7 +21,7 @@ API REST para estimar software. Spring MVC (no reactivo) con PostgreSQL y migrac
 1. Crear la base de datos (una sola vez):
 
 ```sql
-CREATE DATABASE estimation_db;
+CREATE DATABASE in_scope_db;
 ```
 
 2. Levantar la API desde esta carpeta:
@@ -34,7 +34,7 @@ CREATE DATABASE estimation_db;
 .\mvnw.cmd spring-boot:run
 ```
 
-Al arrancar, Flyway crea el esquema `estimation`, las tablas (`V1__schema.sql`) y los datos iniciales (`V2__seed.sql`).
+Al arrancar, Flyway crea el esquema `in_scope`, las tablas (`V1__schema.sql`) y los datos iniciales (`V2__seed.sql`).
 
 La API queda en [http://localhost:8080](http://localhost:8080).
 
@@ -43,16 +43,33 @@ La API queda en [http://localhost:8080](http://localhost:8080).
 | [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html) | Documentación interactiva |
 | [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)         | Especificación OpenAPI    |
 
-## Configuración
+## Configuración y Variables de Entorno
 
-Todo vive en `src/main/resources/application.yaml`. Se sobreescribe con variables de entorno:
+La configuración del backend admite lectura directa desde el archivo `.env` o desde las variables de entorno del sistema operativo en producción (sin requerir Docker):
 
-| Variable                         | Por defecto                                      | Para qué                              |
-| -------------------------------- |--------------------------------------------------| ------------------------------------- |
-| `SPRING_DATASOURCE_URL`          | `jdbc:postgresql://localhost:5432/estimation_db` | Conexión a PostgreSQL              |
-| `SPRING_DATASOURCE_USERNAME`     | `postgres`                                       | Usuario de la base                    |
-| `SPRING_DATASOURCE_PASSWORD`     | `root`                                           | Contraseña de la base                 |
-| `ESTIMATION_CORS_ALLOWED_ORIGINS`| `http://localhost:3000`                          | Orígenes permitidos (separados por coma) para `/api/**` |
+| Categoría | Variable | Valor por defecto | Descripción |
+| :--- | :--- | :--- | :--- |
+| **Servidor** | `SERVER_PORT` | `8080` | Puerto HTTP de la API |
+| **Base de Datos** | `SPRING_DATASOURCE_URL`<br>`SPRING_DATASOURCE_USERNAME`<br>`SPRING_DATASOURCE_PASSWORD` | `jdbc:postgresql://localhost:5432/in_scope_db`<br>`postgres`<br>`root` | Conexión JDBC PostgreSQL |
+| **Correo SMTP** | `SPRING_MAIL_HOST`<br>`SPRING_MAIL_PORT`<br>`SPRING_MAIL_USERNAME`<br>`SPRING_MAIL_PASSWORD` | `smtp.gmail.com`<br>`587`<br>`jheann.elec@gmail.com`<br>`ufuisgqplvayeigk` | Servidor SMTP para correos OTP |
+| **CORS** | `IN_SCOPE_CORS_ALLOWED_ORIGINS` | `http://localhost:3000` | Orígenes HTTP permitidos |
+| **Seguridad JWT** | `IN_SCOPE_JWT_SECRET`<br>`IN_SCOPE_JWT_EXPIRATION_MS`<br>`IN_SCOPE_JWT_REFRESH_EXPIRATION_MS` | *(secreto 64 bytes)*<br>`86400000` (24h)<br>`604800000` (7 días) | Clave de firma y expiración de tokens |
+
+### Despliegue en Producción (sin Docker)
+
+1. Crear el archivo `.env` en la raíz junto al JAR basándote en `.env.example`:
+   ```bash
+   cp .env.example .env
+   # Editar .env con credenciales reales de producción
+   ```
+2. Compilar el ejecutable JAR:
+   ```bash
+   ./mvnw clean package -DskipTests
+   ```
+3. Ejecutar la API en el servidor:
+   ```bash
+   java -jar target/inscope-api-0.0.1.jar
+   ```
 
 ## Usuario inicial
 
@@ -79,8 +96,8 @@ Cambiar la contraseña antes de cualquier despliegue real.
 ## Estructura
 
 ```text
-src/main/java/com/intecx/estimation/
-  EstimationApiApplication.java   Punto de entrada
+src/main/java/com/intecx/inscope/
+  InScopeApplication.java         Punto de entrada
   rest/           Controladores REST (reciben la petición y delegan al servicio)
   service/        Lógica de negocio
   repository/     Repositorios Spring Data JPA (extienden JpaSpecificationExecutor para listados)
@@ -90,7 +107,6 @@ src/main/java/com/intecx/estimation/
     request/      Cuerpos de entrada
     response/     Cuerpos de salida
   mapper/         Conversión entidad ↔ DTO
-  validation/     Validaciones propias (anotaciones y validadores)
   util/           Utilidades sueltas sin dependencia del dominio
   common/         Paginación y filtros genéricos (QueryRequest, QueryFields, QuerySupport, ...)
   exception/      Excepciones REST, ErrorResponse y GlobalExceptionHandler

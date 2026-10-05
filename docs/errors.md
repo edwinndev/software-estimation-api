@@ -8,7 +8,7 @@ Todos los errores de la API tienen el mismo cuerpo, venga de donde venga. Lo arm
   "message": "Proyecto no encontrado",
   "cause": "Not Found",
   "path": "GET http://localhost:8080/api/v1/projects/42",
-  "timestamp": "2026-10-01T05:20:00.123456Z"
+  "timestamp": "2026-10-01T05:20:00.123456"
 }
 ```
 
@@ -18,7 +18,7 @@ Todos los errores de la API tienen el mismo cuerpo, venga de donde venga. Lo arm
 | `message`   | Mensaje para mostrar al usuario                                         |
 | `cause`     | Mensaje de la causa original si existe; si no, el texto del estado HTTP |
 | `path`      | Método y URL de la petición                                             |
-| `timestamp` | Momento del error (UTC)                                                 |
+| `timestamp` | Momento del error (fecha y hora local)                                  |
 
 ## Excepciones propias
 
