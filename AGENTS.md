@@ -4,8 +4,8 @@ Backend de Software Estimation: Spring Boot 4.1 (Spring MVC, **no reactivo**), J
 
 ## 1. Calidad del código
 
-- El código debe ser limpio, pequeño y fácil de leer. Prefiere pocos métodos con buen nombre antes que métodos largos. No agregues capas, abstracciones ni helpers "por si acaso".
-- Compila con JDK 25 después de cada cambio (`./mvnw clean compile`). El build debe terminar **sin errores y sin warnings**. No silencies warnings con `@SuppressWarnings` a nivel de clase; si un cast es inevitable, aíslalo en un método pequeño con `@SuppressWarnings("unchecked")` solo en ese método.
+- El código debe ser limpio, pequeño y fácil de leer. Prefiere pocos métodos con nombres claros antes que métodos largos. No agregues capas, abstracciones ni helpers innecesarios.
+- Compila con JDK 25. El build debe terminar sin errores y sin warnings. No silencies warnings con `@SuppressWarnings` a nivel de clase; si un cast es inevitable, aíslalo en un método pequeño con `@SuppressWarnings("unchecked")` solo en ese método.
 - Elimina imports, campos y métodos sin uso.
 - No agregues comentarios que narren lo que hace el código. Comenta solo la intención o restricción que no sea obvia.
 - No escribas tests salvo que se pidan explícitamente. Nunca dejes archivos de prueba temporales.
@@ -54,9 +54,9 @@ Detalle completo en `docs/errors.md`.
 
 ## 6. Base de datos y migraciones
 
-- El esquema es `estimation`. Usa siempre nombres completos en el SQL (`estimation.users`).
+- El esquema es `in_scope`. Usa siempre nombres completos en el SQL (`in_scope.users`).
 - Flyway es dueño del esquema (`ddl-auto: none`). Nunca edites una migración ya aplicada: agrega una nueva `V{n}__descripcion.sql`.
-- Las claves primarias son `UUID` con `gen_random_uuid()`. Las fechas son `TIMESTAMPTZ` (UTC).
+- Las claves primarias son `UUID` con `gen_random_uuid()`. Las fechas son `TIMESTAMP` y se manejan como `LocalDateTime`.
 - Tipos `ENUM` de PostgreSQL solo para listas fijas. Las listas que pueden crecer son `VARCHAR`. Sin restricciones `CHECK` y sin índices salvo que haya una necesidad clara.
 - Las columnas de auditoría (`created_by`, `updated_by`, `deleted_by`) son `UUID` simples, sin claves foráneas. El borrado lógico (`deleted_at`) solo donde el modelo ya lo define.
 - Los enums de las entidades usan `@Enumerated(EnumType.STRING)` y coinciden exactamente con los valores de la base.
@@ -74,11 +74,11 @@ Detalle completo en `docs/errors.md`.
 
 ### Mensajes de commit:
 
-- Escribe todos los commits en inglés.
+- Escribe los mensajes de commit en español (manteniendo el prefijo en inglés).
 - Mantenlos concisos (máximo 15 palabras).
 - Usa estos prefijos según el tipo de cambio:
-  - **`feat`**: Nueva funcionalidad (por ejemplo, `feat: add users search endpoint with pagination`).
-  - **`fix`**: Corrección de un error o comportamiento inesperado (por ejemplo, `fix: return 404 when project does not exist`).
-  - **`ref`**: Refactor sin cambiar el comportamiento externo (por ejemplo, `ref: extract project mapper from service`).
-  - **`style`**: Formato o nombres sin cambios de lógica (por ejemplo, `style: reorder imports in user service`).
-  - **`docs`**: Solo documentación (por ejemplo, `docs: describe pagination filters`).
+  - **`feat`**: Nueva funcionalidad (por ejemplo, `feat: agregar búsqueda paginada de usuarios`).
+  - **`fix`**: Corrección de un error o comportamiento inesperado (por ejemplo, `fix: corregir respuesta 404 al buscar proyecto`).
+  - **`ref`**: Refactor sin cambiar el comportamiento externo (por ejemplo, `ref: aplanar respuesta DTO de usuario`).
+  - **`style`**: Formato o nombres sin cambios de lógica (por ejemplo, `style: reordenar imports en servicio de usuarios`).
+  - **`docs`**: Solo documentación (por ejemplo, `docs: actualizar variables de entorno en README`).

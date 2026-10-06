@@ -64,7 +64,7 @@ Comportamientos a tener en cuenta:
 
 - Texto: la comparación no distingue mayúsculas. En `LK` los caracteres `%` y `_` se escapan, se buscan literalmente.
 - Enums en `values` de un filtro: se aceptan en cualquier combinación de mayúsculas y minúsculas.
-- Fechas: un valor solo con fecha (`2026-03-12`) sobre un timestamp cubre el día completo en UTC.
+- Fechas: un valor solo con fecha (`2026-03-12`) sobre un timestamp cubre el día completo en hora local.
 - `key` puede apuntar a varios atributos a la vez (por ejemplo `search` busca en nombre y correo). Basta que uno coincida.
 
 ## Respuesta: `PaginatedResponse`
@@ -76,11 +76,15 @@ Las filas van bajo una clave propia de cada recurso (`userResponse`, `projectRes
   "userResponse": [
     {
       "id": "8f2a1c4e-3b9d-4a11-9c0e-2d7f6a1b0e33",
+      "roleId": "d0e1f2a3-4b5c-6d7e-8f9a-0b1c2d3e4f5a",
+      "roleCode": "ESTIMATOR",
+      "roleName": "Estimador",
       "firstName": "Laura",
       "lastName": "Gómez",
       "email": "laura.gomez@intecx.com",
-      "role": "estimator",
-      "createdAt": "2026-03-12T14:20:00Z"
+      "isActive": true,
+      "createdAt": "2026-03-12T14:20:00",
+      "updatedAt": null
     }
   ],
   "pageNumber": 0,
