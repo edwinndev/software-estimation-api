@@ -30,6 +30,24 @@ public class QuerySupport {
             Function<? super E, ? extends R> mapper,
             String collectionKey
     ) {
+        return searchWithBatchMapping(
+                repository,
+                scope,
+                fields,
+                query,
+                entities -> entities.stream().<R>map(mapper).toList(),
+                collectionKey
+        );
+    }
+
+    public <E, R> PaginatedResponse<R> searchWithBatchMapping(
+            JpaSpecificationExecutor<E> repository,
+            Specification<E> scope,
+            QueryFields fields,
+            QueryRequest query,
+            Function<List<E>, List<R>> mapper,
+            String collectionKey
+    ) {
         PaginationRequest pagination = query.pagination();
         Sort sort = fields.sort(pagination);
         Specification<E> specification = scope.and(FilterSpecifications.from(query.filters(), fields));
@@ -39,7 +57,7 @@ public class QuerySupport {
             page = findPage(repository, specification, page.getTotalPages() - 1, pagination.pageSize(), sort);
         }
 
-        List<R> items = page.getContent().stream().<R>map(mapper).toList();
+        List<R> items = mapper.apply(page.getContent());
         return PaginatedResponse.of(collectionKey, items, PageMeta.of(page.getTotalElements(), page.getNumber(), page.getSize()));
     }
 
