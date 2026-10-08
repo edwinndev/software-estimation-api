@@ -13,7 +13,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 
-public record CreateTechnicalProfileRequest(
+public record UpdateTechnicalProfileRequest(
         @NotBlank(message = "El nombre es obligatorio")
         @Size(min = 2, max = 100, message = "El nombre debe tener entre 2 y 100 caracteres")
         @Schema(description = "Nombre completo del perfil técnico", example = "Juan Pérez")
@@ -26,11 +26,11 @@ public record CreateTechnicalProfileRequest(
         String email,
 
         @NotNull(message = "El rol técnico es obligatorio")
-        @Schema(description = "Rol técnico desempeñado (FRONTEND, BACKEND, FULLSTACK, QA, DEVOPS, UI_UX_DESIGNER, PRODUCT_MANAGER, TECH_LEAD, FUNCTIONAL_ANALYST, OTHER)", example = "FRONTEND")
+        @Schema(description = "Rol técnico desempeñado", example = "FRONTEND")
         TechnicalRole role,
 
         @NotNull(message = "El nivel de experiencia es obligatorio")
-        @Schema(description = "Nivel de experiencia (JUNIOR, MID, SENIOR, LEAD)", example = "SENIOR")
+        @Schema(description = "Nivel de experiencia", example = "SENIOR")
         ExperienceLevel experienceLevel,
 
         @NotNull(message = "El costo estándar (CER) por hora es obligatorio")
@@ -41,10 +41,10 @@ public record CreateTechnicalProfileRequest(
         BigDecimal hourlyRate,
 
         @Pattern(regexp = "^[A-Z]{3}$", message = "La moneda debe tener un formato de 3 letras (ISO 4217)")
-        @Schema(description = "Código de moneda ISO", example = "PEN", defaultValue = "PEN")
+        @Schema(description = "Código de moneda ISO", example = "PEN")
         String currency,
 
-        @Schema(description = "Indica si el perfil se encuentra activo", example = "true", defaultValue = "true")
+        @Schema(description = "Indica si el perfil se encuentra activo", example = "true")
         Boolean isActive
 ) {
 }

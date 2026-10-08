@@ -6,6 +6,7 @@ import com.intecx.inscope.common.QueryRequest;
 import com.intecx.inscope.common.QuerySupport;
 import com.intecx.inscope.dto.request.profile.CreateTechnicalProfileRequest;
 import com.intecx.inscope.dto.request.profile.UpdateCerRequest;
+import com.intecx.inscope.dto.request.profile.UpdateTechnicalProfileRequest;
 import com.intecx.inscope.dto.response.TechnicalProfileResponse;
 import com.intecx.inscope.entity.TechnicalProfile;
 import com.intecx.inscope.exception.ConflictException;
@@ -72,6 +73,35 @@ public class TechnicalProfileServiceImpl implements TechnicalProfileService {
         TechnicalProfile savedProfile = technicalProfileRepository.save(technicalProfile);
 
         return technicalProfileMapper.toResponse(savedProfile);
+    }
+
+    @Override
+    @Transactional
+    public TechnicalProfileResponse update(UUID id, UpdateTechnicalProfileRequest request, UUID actorId) {
+        TechnicalProfile profile = technicalProfileRepository.findActiveById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Perfil técnico no encontrado"));
+
+        String newEmail = request.email().trim().toLowerCase();
+        if (!profile.getEmail().equalsIgnoreCase(newEmail)
+                && technicalProfileRepository.existsActiveByEmailAndIdNot(newEmail, id)) {
+            throw new ConflictException("Ya existe un perfil técnico registrado con el correo electrónico proporcionado");
+        }
+
+        profile.setName(request.name().trim());
+        profile.setEmail(newEmail);
+        profile.setRole(request.role());
+        profile.setExperienceLevel(request.experienceLevel());
+        profile.setHourlyRate(request.hourlyRate());
+        if (request.currency() != null && !request.currency().isBlank()) {
+            profile.setCurrency(request.currency().trim().toUpperCase());
+        }
+        if (request.isActive() != null) {
+            profile.setActive(request.isActive());
+        }
+        profile.setUpdatedBy(actorId);
+
+        TechnicalProfile updatedProfile = technicalProfileRepository.save(profile);
+        return technicalProfileMapper.toResponse(updatedProfile);
     }
 
     @Override

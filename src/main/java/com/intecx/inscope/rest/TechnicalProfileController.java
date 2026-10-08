@@ -4,6 +4,7 @@ import com.intecx.inscope.common.PaginatedResponse;
 import com.intecx.inscope.common.QueryRequest;
 import com.intecx.inscope.dto.request.profile.CreateTechnicalProfileRequest;
 import com.intecx.inscope.dto.request.profile.UpdateCerRequest;
+import com.intecx.inscope.dto.request.profile.UpdateTechnicalProfileRequest;
 import com.intecx.inscope.dto.response.TechnicalProfileResponse;
 import com.intecx.inscope.security.UserPrincipal;
 import com.intecx.inscope.service.TechnicalProfileService;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -72,6 +74,23 @@ public class TechnicalProfileController {
             @AuthenticationPrincipal UserPrincipal principal) {
         TechnicalProfileResponse response = technicalProfileService.create(request, principal.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @Operation(summary = "Actualizar un perfil técnico existente")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Perfil técnico actualizado exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
+            @ApiResponse(responseCode = "404", description = "Perfil técnico no encontrado"),
+            @ApiResponse(responseCode = "409", description = "El correo electrónico ya está en uso")
+    })
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('profile:write')")
+    public ResponseEntity<TechnicalProfileResponse> update(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateTechnicalProfileRequest request,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        TechnicalProfileResponse response = technicalProfileService.update(id, request, principal.getId());
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Asignar o actualizar el Costo Estándar por Recurso (CER) por hora")
