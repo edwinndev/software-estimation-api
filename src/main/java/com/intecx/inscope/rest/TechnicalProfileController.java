@@ -64,8 +64,7 @@ public class TechnicalProfileController {
     @Operation(summary = "Registrar un perfil técnico")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Perfil técnico registrado exitosamente"),
-            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
-            @ApiResponse(responseCode = "409", description = "El correo electrónico ya está en uso")
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos")
     })
     @PostMapping
     @PreAuthorize("hasAuthority('profile:write')")
@@ -79,9 +78,7 @@ public class TechnicalProfileController {
     @Operation(summary = "Actualizar un perfil técnico existente")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Perfil técnico actualizado exitosamente"),
-            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
-            @ApiResponse(responseCode = "404", description = "Perfil técnico no encontrado"),
-            @ApiResponse(responseCode = "409", description = "El correo electrónico ya está en uso")
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos")
     })
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('profile:write')")
@@ -96,8 +93,7 @@ public class TechnicalProfileController {
     @Operation(summary = "Asignar o actualizar el Costo Estándar por Recurso (CER) por hora")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "CER asignado/actualizado exitosamente"),
-            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
-            @ApiResponse(responseCode = "404", description = "Perfil técnico no encontrado")
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos")
     })
     @PatchMapping("/{id}/cer")
     @PreAuthorize("hasAuthority('cost:write') or hasAuthority('profile:write')")
