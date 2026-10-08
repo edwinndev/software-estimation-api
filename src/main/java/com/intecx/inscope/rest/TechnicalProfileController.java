@@ -1,5 +1,7 @@
 package com.intecx.inscope.rest;
 
+import com.intecx.inscope.common.PaginatedResponse;
+import com.intecx.inscope.common.QueryRequest;
 import com.intecx.inscope.dto.request.profile.CreateTechnicalProfileRequest;
 import com.intecx.inscope.dto.request.profile.UpdateCerRequest;
 import com.intecx.inscope.dto.response.TechnicalProfileResponse;
@@ -16,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,6 +33,31 @@ import org.springframework.web.bind.annotation.RestController;
 public class TechnicalProfileController {
 
     private final TechnicalProfileService technicalProfileService;
+
+    @Operation(summary = "Búsqueda paginada y filtrado de perfiles técnicos")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Listado paginado obtenido exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Filtros o criterios de búsqueda inválidos")
+    })
+    @PostMapping("/search")
+    @PreAuthorize("hasAuthority('profile:read')")
+    public ResponseEntity<PaginatedResponse<TechnicalProfileResponse>> search(
+            @RequestBody(required = false) QueryRequest query) {
+        PaginatedResponse<TechnicalProfileResponse> response = technicalProfileService.search(query);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "Obtener un perfil técnico por su ID")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Perfil técnico encontrado exitosamente"),
+            @ApiResponse(responseCode = "404", description = "Perfil técnico no encontrado")
+    })
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('profile:read')")
+    public ResponseEntity<TechnicalProfileResponse> getById(@PathVariable UUID id) {
+        TechnicalProfileResponse response = technicalProfileService.getById(id);
+        return ResponseEntity.ok(response);
+    }
 
     @Operation(summary = "Registrar un perfil técnico")
     @ApiResponses({

@@ -1,5 +1,9 @@
 package com.intecx.inscope.service.impl;
 
+import com.intecx.inscope.common.PaginatedResponse;
+import com.intecx.inscope.common.QueryFields;
+import com.intecx.inscope.common.QueryRequest;
+import com.intecx.inscope.common.QuerySupport;
 import com.intecx.inscope.dto.request.profile.CreateTechnicalProfileRequest;
 import com.intecx.inscope.dto.request.profile.UpdateCerRequest;
 import com.intecx.inscope.dto.response.TechnicalProfileResponse;
@@ -11,6 +15,7 @@ import com.intecx.inscope.repository.TechnicalProfileRepository;
 import com.intecx.inscope.service.TechnicalProfileService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,8 +23,42 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class TechnicalProfileServiceImpl implements TechnicalProfileService {
 
+    private static final QueryFields PROFILE_FIELDS = QueryFields.sortingBy("createdAt")
+            .filter("search", "name", "email")
+            .filter("name", "name")
+            .filter("email", "email")
+            .filter("role", "role")
+            .filter("experienceLevel", "experienceLevel")
+            .filter("hourlyRate", "hourlyRate")
+            .filter("currency", "currency")
+            .filter("isActive", "isActive")
+            .filter("createdAt", "createdAt")
+            .sortable("createdAt", "name", "email", "role", "experienceLevel", "hourlyRate", "isActive");
+
     private final TechnicalProfileRepository technicalProfileRepository;
     private final TechnicalProfileMapper technicalProfileMapper;
+
+    @Override
+    @Transactional(readOnly = true)
+    public PaginatedResponse<TechnicalProfileResponse> search(QueryRequest query) {
+        Specification<TechnicalProfile> notDeletedScope = (root, q, cb) -> cb.isNull(root.get("deletedAt"));
+        return QuerySupport.search(
+                technicalProfileRepository,
+                notDeletedScope,
+                PROFILE_FIELDS,
+                query,
+                technicalProfileMapper::toResponse,
+                "profilesResponse"
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public TechnicalProfileResponse getById(UUID id) {
+        TechnicalProfile profile = technicalProfileRepository.findActiveById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Perfil técnico no encontrado"));
+        return technicalProfileMapper.toResponse(profile);
+    }
 
     @Override
     @Transactional
