@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -119,5 +120,19 @@ public class TechnicalProfileController {
             @AuthenticationPrincipal UserPrincipal principal) {
         TechnicalProfileResponse response = technicalProfileService.changeStatus(id, request, principal.getId());
         return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "Eliminar un perfil técnico (borrado lógico)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Perfil técnico eliminado exitosamente"),
+            @ApiResponse(responseCode = "404", description = "Perfil técnico no encontrado")
+    })
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('profile:delete')")
+    public ResponseEntity<Void> delete(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        technicalProfileService.delete(id, principal.getId());
+        return ResponseEntity.noContent().build();
     }
 }

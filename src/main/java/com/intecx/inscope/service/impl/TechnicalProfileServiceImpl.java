@@ -133,4 +133,17 @@ public class TechnicalProfileServiceImpl implements TechnicalProfileService {
         TechnicalProfile updatedProfile = technicalProfileRepository.save(profile);
         return technicalProfileMapper.toResponse(updatedProfile);
     }
+
+    @Override
+    @Transactional
+    public void delete(UUID id, UUID actorId) {
+        TechnicalProfile profile = technicalProfileRepository.findActiveById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Perfil técnico no encontrado"));
+
+        profile.setDeletedAt(java.time.LocalDateTime.now());
+        profile.setDeletedBy(actorId);
+        profile.setActive(false);
+
+        technicalProfileRepository.save(profile);
+    }
 }

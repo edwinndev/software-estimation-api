@@ -22,4 +22,6 @@ public interface TechnicalProfileService {
     TechnicalProfileResponse updateCer(UUID id, UpdateCerRequest request, UUID actorId);
 
     TechnicalProfileResponse changeStatus(UUID id, ToggleProfileStatusRequest request, UUID actorId);
+
+    void delete(UUID id, UUID actorId);
 }
