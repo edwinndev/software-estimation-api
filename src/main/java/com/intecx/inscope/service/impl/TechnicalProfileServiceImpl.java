@@ -5,6 +5,7 @@ import com.intecx.inscope.common.QueryFields;
 import com.intecx.inscope.common.QueryRequest;
 import com.intecx.inscope.common.QuerySupport;
 import com.intecx.inscope.dto.request.profile.CreateTechnicalProfileRequest;
+import com.intecx.inscope.dto.request.profile.ToggleProfileStatusRequest;
 import com.intecx.inscope.dto.request.profile.UpdateCerRequest;
 import com.intecx.inscope.dto.request.profile.UpdateTechnicalProfileRequest;
 import com.intecx.inscope.dto.response.TechnicalProfileResponse;
@@ -114,6 +115,19 @@ public class TechnicalProfileServiceImpl implements TechnicalProfileService {
         if (request.currency() != null && !request.currency().isBlank()) {
             profile.setCurrency(request.currency().trim().toUpperCase());
         }
+        profile.setUpdatedBy(actorId);
+
+        TechnicalProfile updatedProfile = technicalProfileRepository.save(profile);
+        return technicalProfileMapper.toResponse(updatedProfile);
+    }
+
+    @Override
+    @Transactional
+    public TechnicalProfileResponse changeStatus(UUID id, ToggleProfileStatusRequest request, UUID actorId) {
+        TechnicalProfile profile = technicalProfileRepository.findActiveById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Perfil técnico no encontrado"));
+
+        profile.setActive(request.isActive());
         profile.setUpdatedBy(actorId);
 
         TechnicalProfile updatedProfile = technicalProfileRepository.save(profile);

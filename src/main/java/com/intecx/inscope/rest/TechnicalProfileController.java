@@ -3,6 +3,7 @@ package com.intecx.inscope.rest;
 import com.intecx.inscope.common.PaginatedResponse;
 import com.intecx.inscope.common.QueryRequest;
 import com.intecx.inscope.dto.request.profile.CreateTechnicalProfileRequest;
+import com.intecx.inscope.dto.request.profile.ToggleProfileStatusRequest;
 import com.intecx.inscope.dto.request.profile.UpdateCerRequest;
 import com.intecx.inscope.dto.request.profile.UpdateTechnicalProfileRequest;
 import com.intecx.inscope.dto.response.TechnicalProfileResponse;
@@ -102,6 +103,21 @@ public class TechnicalProfileController {
             @Valid @RequestBody UpdateCerRequest request,
             @AuthenticationPrincipal UserPrincipal principal) {
         TechnicalProfileResponse response = technicalProfileService.updateCer(id, request, principal.getId());
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "Activar o desactivar un perfil técnico")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Estado del perfil técnico actualizado exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos")
+    })
+    @PatchMapping("/{id}/status")
+    @PreAuthorize("hasAuthority('profile:write')")
+    public ResponseEntity<TechnicalProfileResponse> changeStatus(
+            @PathVariable UUID id,
+            @Valid @RequestBody ToggleProfileStatusRequest request,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        TechnicalProfileResponse response = technicalProfileService.changeStatus(id, request, principal.getId());
         return ResponseEntity.ok(response);
     }
 }
