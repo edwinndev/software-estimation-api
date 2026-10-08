@@ -1,6 +1,7 @@
 package com.intecx.inscope.rest;
 
 import com.intecx.inscope.dto.request.profile.CreateTechnicalProfileRequest;
+import com.intecx.inscope.dto.request.profile.UpdateCerRequest;
 import com.intecx.inscope.dto.response.TechnicalProfileResponse;
 import com.intecx.inscope.security.UserPrincipal;
 import com.intecx.inscope.service.TechnicalProfileService;
@@ -9,11 +10,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,5 +44,21 @@ public class TechnicalProfileController {
             @AuthenticationPrincipal UserPrincipal principal) {
         TechnicalProfileResponse response = technicalProfileService.create(request, principal.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @Operation(summary = "Asignar o actualizar el Costo Estándar por Recurso (CER) por hora")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "CER asignado/actualizado exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
+            @ApiResponse(responseCode = "404", description = "Perfil técnico no encontrado")
+    })
+    @PatchMapping("/{id}/cer")
+    @PreAuthorize("hasAuthority('cost:write') or hasAuthority('profile:write')")
+    public ResponseEntity<TechnicalProfileResponse> updateCer(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateCerRequest request,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        TechnicalProfileResponse response = technicalProfileService.updateCer(id, request, principal.getId());
+        return ResponseEntity.ok(response);
     }
 }
