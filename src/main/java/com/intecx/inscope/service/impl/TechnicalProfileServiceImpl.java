@@ -15,6 +15,7 @@ import com.intecx.inscope.exception.ResourceNotFoundException;
 import com.intecx.inscope.mapper.TechnicalProfileMapper;
 import com.intecx.inscope.repository.TechnicalProfileRepository;
 import com.intecx.inscope.service.TechnicalProfileService;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
@@ -140,7 +141,7 @@ public class TechnicalProfileServiceImpl implements TechnicalProfileService {
         TechnicalProfile profile = technicalProfileRepository.findActiveById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Perfil técnico no encontrado"));
 
-        profile.setDeletedAt(java.time.LocalDateTime.now());
+        profile.setDeletedAt(LocalDateTime.now());
         profile.setDeletedBy(actorId);
         profile.setActive(false);
 
