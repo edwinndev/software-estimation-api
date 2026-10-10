@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/v1/sprint-configs")
@@ -28,6 +29,7 @@ public class SprintConfigController {
     private final SprintConfigService sprintConfigService;
 
     @PutMapping("/{projectId}/velocity")
+        @PreAuthorize("hasAuthority('estimation:write')")
     @Operation(
             summary = "Registrar la velocidad del equipo",
             description = "Guarda la velocidad obtenida en sprints anteriores. Si el proyecto no tiene "

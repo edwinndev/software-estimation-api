@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/v1/user-stories")
@@ -27,6 +28,7 @@ public class UserStoryController {
     private final UserStoryService userStoryService;
 
     @PutMapping("/{id}/story-points")
+        @PreAuthorize("hasAuthority('estimation:write')")
     @Operation(
             summary = "Asignar story points a una historia de usuario",
             description = "Registra o reemplaza los story points de la historia indicada."
