@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "task_assignments")
+@Table(name = "task_assignments", schema = "in_scope")
 @Getter
 @Setter
 @NoArgsConstructor
