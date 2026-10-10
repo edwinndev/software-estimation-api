@@ -1,0 +1,21 @@
+package com.intecx.inscope.repository;
+
+import com.intecx.inscope.entity.Task;
+import java.util.List;
+import java.util.UUID;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+public interface TaskRepository extends JpaRepository<Task, UUID> {
+
+    @Query("""
+            select t from Task t
+            join fetch t.story s
+            where s.projectId = :projectId
+              and t.deletedAt is null
+              and s.deletedAt is null
+            order by s.position, t.position
+            """)
+    List<Task> findActiveByProjectId(@Param("projectId") UUID projectId);
+}
