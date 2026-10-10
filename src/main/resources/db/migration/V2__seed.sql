@@ -1,5 +1,5 @@
 -- permisos
-INSERT INTO estimation.permissions (code, label, group_code, group_label) VALUES
+INSERT INTO in_scope.permissions (code, label, group_code, group_label) VALUES
     ('user:read', 'Ver usuarios', 'security', 'Seguridad'),
     ('user:write', 'Crear y editar usuarios', 'security', 'Seguridad'),
     ('user:delete', 'Eliminar usuarios', 'security', 'Seguridad'),
@@ -17,21 +17,21 @@ INSERT INTO estimation.permissions (code, label, group_code, group_label) VALUES
     ('history:read', 'Ver historial', 'reports', 'Reportes e historial');
 
 -- roles y sus permisos
-INSERT INTO estimation.roles (code, name, description, is_system) VALUES
-    ('admin', 'ADMINISTRADOR', 'Acceso completo al sistema.', TRUE),
-    ('estimator', 'ESTIMADOR', 'Gestiona perfiles, proyectos, estimación, costos y riesgos.', TRUE),
-    ('viewer', 'CONSULTOR', 'Solo lectura de proyectos, estimación, costos, riesgos y reportes.', TRUE);
+INSERT INTO in_scope.roles (code, name, description, is_system) VALUES
+    ('admin', 'ADMINISTRADOR', 'Acceso completo a la administración del sistema.', TRUE),
+    ('estimator', 'ESTIMADOR', 'Gestión de estimaciones, recursos y costos asociados.', FALSE),
+    ('viewer', 'CONSULTOR', 'Consulta de información y visualización de reportes.', FALSE);
 
-INSERT INTO estimation.role_permissions (role_id, permission_id)
+INSERT INTO in_scope.role_permissions (role_id, permission_id)
 SELECT r.id, p.id
-FROM estimation.roles r
-CROSS JOIN estimation.permissions p
+FROM in_scope.roles r
+CROSS JOIN in_scope.permissions p
 WHERE r.code = 'admin';
 
-INSERT INTO estimation.role_permissions (role_id, permission_id)
+INSERT INTO in_scope.role_permissions (role_id, permission_id)
 SELECT r.id, p.id
-FROM estimation.roles r
-JOIN estimation.permissions p ON p.code IN (
+FROM in_scope.roles r
+JOIN in_scope.permissions p ON p.code IN (
     'profile:read', 'profile:write',
     'project:read', 'project:write',
     'estimation:read', 'estimation:write',
@@ -41,21 +41,21 @@ JOIN estimation.permissions p ON p.code IN (
 )
 WHERE r.code = 'estimator';
 
-INSERT INTO estimation.role_permissions (role_id, permission_id)
+INSERT INTO in_scope.role_permissions (role_id, permission_id)
 SELECT r.id, p.id
-FROM estimation.roles r
-JOIN estimation.permissions p ON p.code IN (
+FROM in_scope.roles r
+JOIN in_scope.permissions p ON p.code IN (
     'project:read', 'estimation:read', 'cost:read',
     'risk:read', 'report:read', 'history:read'
 )
 WHERE r.code = 'viewer';
 
 -- administrador (contraseña: admin123)
-INSERT INTO estimation.users (role_id, first_name, last_name, email, password_hash, is_active)
+INSERT INTO in_scope.users (role_id, first_name, last_name, email, password_hash, is_active)
 SELECT r.id, 'Admin', 'Sistema', 'jcvargas.dev@gmail.com', '$2a$12$CN/iYj/WH8IbSCvyMfew4uR7BNpHkomogOAJ/y00tPiGM4CfNKADG', TRUE
-FROM estimation.roles r
+FROM in_scope.roles r
 WHERE r.code = 'admin';
 
-UPDATE estimation.users
+UPDATE in_scope.users
 SET created_by = id
 WHERE email = 'jcvargas.dev@gmail.com';
