@@ -20,7 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/user-stories")
 @RequiredArgsConstructor
-@Tag(name = "Historias de usuario")
+@Tag(name = "Estimación ágil",
+        description = "Endpoints para la estimación ágil: story points, velocidad, duración del sprint y horas por tarea")
 public class UserStoryController {
 
     private final UserStoryService userStoryService;

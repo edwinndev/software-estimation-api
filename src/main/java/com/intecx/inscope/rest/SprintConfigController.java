@@ -21,7 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/sprint-configs")
 @RequiredArgsConstructor
-@Tag(name = "Configuración de sprints")
+@Tag(name = "Estimación ágil",
+        description = "Endpoints para la estimación ágil: story points, velocidad, duración del sprint y horas por tarea")
 public class SprintConfigController {
 
     private final SprintConfigService sprintConfigService;
