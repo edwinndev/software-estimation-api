@@ -1,5 +1,6 @@
 package com.intecx.inscope.service.impl;
 
+import com.intecx.inscope.dto.request.estimation.DurationRequest;
 import com.intecx.inscope.dto.request.estimation.VelocityRequest;
 import com.intecx.inscope.dto.response.SprintConfigResponse;
 import com.intecx.inscope.entity.SprintConfig;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class SprintConfigServiceImpl implements SprintConfigService {
 
     // Mismos valores por defecto que sprint_configs en V1__schema.sql.
+    private static final int DEFAULT_VELOCITY = 5;
     private static final int DEFAULT_DURATION = 2;
     private static final SprintUnit DEFAULT_UNIT = SprintUnit.DAYS;
 
@@ -26,15 +28,29 @@ public class SprintConfigServiceImpl implements SprintConfigService {
     @Override
     @Transactional
     public SprintConfigResponse registerVelocity(UUID projectId, VelocityRequest request) {
-        SprintConfig config = sprintConfigRepository.findById(projectId)
-                .orElseGet(() -> newConfig(projectId));
+        SprintConfig config = findOrCreate(projectId);
         config.setVelocity(request.velocity());
         return sprintConfigMapper.toResponse(sprintConfigRepository.save(config));
+    }
+
+    @Override
+    @Transactional
+    public SprintConfigResponse configureDuration(UUID projectId, DurationRequest request) {
+        SprintConfig config = findOrCreate(projectId);
+        config.setDuration(request.duration());
+        config.setUnit(request.unit());
+        return sprintConfigMapper.toResponse(sprintConfigRepository.save(config));
+    }
+
+    private SprintConfig findOrCreate(UUID projectId) {
+        return sprintConfigRepository.findById(projectId)
+                .orElseGet(() -> newConfig(projectId));
     }
 
     private SprintConfig newConfig(UUID projectId) {
         SprintConfig config = new SprintConfig();
         config.setProjectId(projectId);
+        config.setVelocity(DEFAULT_VELOCITY);
         config.setDuration(DEFAULT_DURATION);
         config.setUnit(DEFAULT_UNIT);
         return config;

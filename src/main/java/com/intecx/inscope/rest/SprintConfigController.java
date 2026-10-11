@@ -1,5 +1,6 @@
 package com.intecx.inscope.rest;
 
+import com.intecx.inscope.dto.request.estimation.DurationRequest;
 import com.intecx.inscope.dto.request.estimation.VelocityRequest;
 import com.intecx.inscope.dto.response.SprintConfigResponse;
 import com.intecx.inscope.service.SprintConfigService;
@@ -46,5 +47,24 @@ public class SprintConfigController {
             @Valid @RequestBody VelocityRequest request
     ) {
         return ResponseEntity.ok(sprintConfigService.registerVelocity(projectId, request));
+    }
+
+    @Operation(
+            summary = "Configurar la duración del sprint",
+            description = "Define la duración y la unidad del sprint usadas en las estimaciones. Si el "
+                    + "proyecto no tiene configuración de sprint, la crea con los valores por defecto."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Duración configurada"),
+            @ApiResponse(responseCode = "400", description = "Duración o unidad ausentes o inválidas"),
+            @ApiResponse(responseCode = "409", description = "No se pudo guardar (por ejemplo, el proyecto no existe)")
+    })
+    @PatchMapping("/{projectId}/duration")
+    @PreAuthorize("hasAuthority('estimation:write')")
+    public ResponseEntity<SprintConfigResponse> configureDuration(
+            @PathVariable UUID projectId,
+            @Valid @RequestBody DurationRequest request
+    ) {
+        return ResponseEntity.ok(sprintConfigService.configureDuration(projectId, request));
     }
 }
