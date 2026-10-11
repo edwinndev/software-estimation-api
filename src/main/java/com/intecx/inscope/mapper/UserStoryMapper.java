@@ -2,12 +2,17 @@ package com.intecx.inscope.mapper;
 
 import com.intecx.inscope.dto.response.UserStoryResponse;
 import com.intecx.inscope.entity.UserStory;
-import lombok.experimental.UtilityClass;
+import org.springframework.stereotype.Component;
 
-@UtilityClass
-public class UserStoryMapper {
+@Component
+public class UserStoryMapper implements BaseMapper<UserStory, UserStoryResponse> {
 
+    @Override
     public UserStoryResponse toResponse(UserStory story) {
+        if (story == null) {
+            return null;
+        }
+
         return UserStoryResponse.builder()
                 .id(story.getId())
                 .projectId(story.getProjectId())

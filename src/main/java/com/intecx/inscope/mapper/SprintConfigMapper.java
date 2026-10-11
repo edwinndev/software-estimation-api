@@ -2,12 +2,17 @@ package com.intecx.inscope.mapper;
 
 import com.intecx.inscope.dto.response.SprintConfigResponse;
 import com.intecx.inscope.entity.SprintConfig;
-import lombok.experimental.UtilityClass;
+import org.springframework.stereotype.Component;
 
-@UtilityClass
-public class SprintConfigMapper {
+@Component
+public class SprintConfigMapper implements BaseMapper<SprintConfig, SprintConfigResponse> {
 
+    @Override
     public SprintConfigResponse toResponse(SprintConfig config) {
+        if (config == null) {
+            return null;
+        }
+
         return SprintConfigResponse.builder()
                 .projectId(config.getProjectId())
                 .velocity(config.getVelocity())
