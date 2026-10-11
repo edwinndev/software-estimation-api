@@ -12,8 +12,8 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,7 +38,7 @@ public class UserStoryController {
             @ApiResponse(responseCode = "400", description = "Story points ausentes o inválidos"),
             @ApiResponse(responseCode = "404", description = "La historia de usuario no existe")
     })
-    @PutMapping("/{id}/story-points")
+    @PatchMapping("/{id}/story-points")
     @PreAuthorize("hasAuthority('estimation:write')")
     public ResponseEntity<UserStoryResponse> assignStoryPoints(
             @PathVariable UUID id,
