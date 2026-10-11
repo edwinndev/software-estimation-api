@@ -12,8 +12,8 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,7 +39,7 @@ public class SprintConfigController {
             @ApiResponse(responseCode = "400", description = "Velocidad ausente o inválida"),
             @ApiResponse(responseCode = "409", description = "No se pudo guardar (por ejemplo, el proyecto no existe)")
     })
-    @PutMapping("/{projectId}/velocity")
+    @PatchMapping("/{projectId}/velocity")
     @PreAuthorize("hasAuthority('estimation:write')")
     public ResponseEntity<SprintConfigResponse> registerVelocity(
             @PathVariable UUID projectId,
@@ -47,4 +47,4 @@ public class SprintConfigController {
     ) {
         return ResponseEntity.ok(sprintConfigService.registerVelocity(projectId, request));
     }
-}       
+}
