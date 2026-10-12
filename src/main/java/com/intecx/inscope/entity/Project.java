@@ -1,6 +1,7 @@
 package com.intecx.inscope.entity;
 
 import com.intecx.inscope.enumeration.ProjectStatus;
+import com.intecx.inscope.enumeration.RiskLevel; 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -12,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -62,3 +64,9 @@ public class Project extends BaseAuditEntity {
     @Column(name = "status", nullable = false, columnDefinition = "in_scope.project_status")
     private ProjectStatus status = ProjectStatus.DRAFT;
 }
+    @Enumerated(EnumType.STRING)
+    @Column(name = "risk_level")
+    private RiskLevel riskLevel;
+
+    @Column(name = "contingency_margin")
+    private BigDecimal contingencyMargin;
