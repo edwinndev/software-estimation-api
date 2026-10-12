@@ -27,6 +27,11 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @NoArgsConstructor
 public class SprintConfig {
 
+    // Mismos valores por defecto que sprint_configs en V1__schema.sql.
+    private static final int DEFAULT_VELOCITY = 5;
+    private static final int DEFAULT_DURATION = 2;
+    private static final SprintUnit DEFAULT_UNIT = SprintUnit.DAYS;
+
     @Id
     @Column(name = "project_id")
     private UUID projectId;
@@ -49,4 +54,13 @@ public class SprintConfig {
     @LastModifiedBy
     @Column(name = "updated_by")
     private UUID updatedBy;
+
+    public static SprintConfig withDefaults(UUID projectId) {
+        SprintConfig config = new SprintConfig();
+        config.setProjectId(projectId);
+        config.setVelocity(DEFAULT_VELOCITY);
+        config.setDuration(DEFAULT_DURATION);
+        config.setUnit(DEFAULT_UNIT);
+        return config;
+    }
 }
