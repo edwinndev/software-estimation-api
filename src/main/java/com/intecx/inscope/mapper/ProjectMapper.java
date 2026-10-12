@@ -38,6 +38,8 @@ public class ProjectMapper {
                 .plannedDate(project.getPlannedDate())
                 .responsibleId(responsibleId)
                 .status(project.getStatus())
+                .riskLevel(project.getRiskLevel())
+                .contingencyMargin(project.getContingencyMargin())
                 .createdAt(project.getCreatedAt())
                 .estimations(estimations)
                 .build();
