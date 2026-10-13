@@ -2,12 +2,16 @@ package com.intecx.inscope.repository;
 
 import com.intecx.inscope.entity.Task;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface TaskRepository extends JpaRepository<Task, UUID> {
+
+    @Query("SELECT t FROM Task t WHERE t.id = :id AND t.deletedAt IS NULL")
+    Optional<Task> findActiveById(@Param("id") UUID id);
 
     @Query("""
             select t from Task t
