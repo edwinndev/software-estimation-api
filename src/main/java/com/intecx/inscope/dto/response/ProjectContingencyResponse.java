@@ -7,10 +7,12 @@ import lombok.Builder;
 @Builder
 public record ProjectContingencyResponse(
         RiskLevel riskLevel,
-        BigDecimal contingencyMargin,
-        BigDecimal estimatedTime,
-        BigDecimal estimatedTimeWithContingency,
-        BigDecimal estimatedCost,
-        BigDecimal estimatedCostWithContingency
+        BigDecimal contingencyMarginPercentage,
+        BigDecimal baseTime,
+        BigDecimal contingencyTime,
+        BigDecimal totalTime,
+        BigDecimal baseCost,
+        BigDecimal contingencyCost,
+        BigDecimal totalCost
 ) {
 }
