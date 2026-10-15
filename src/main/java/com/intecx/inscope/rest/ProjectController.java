@@ -3,19 +3,22 @@ package com.intecx.inscope.rest;
 import com.intecx.inscope.common.PaginatedResponse;
 import com.intecx.inscope.common.QueryRequest;
 import com.intecx.inscope.dto.request.project.CreateProjectRequest;
+import com.intecx.inscope.dto.request.project.ProjectContingencyRequest;
 import com.intecx.inscope.dto.request.project.UpdateProjectRequest;
 import com.intecx.inscope.dto.request.project.UpdateProjectStatusRequest;
 import com.intecx.inscope.dto.response.ProjectResponse;
 import com.intecx.inscope.dto.response.ProjectStatusHistoryResponse;
+import com.intecx.inscope.dto.response.project.ProjectContingencyResponse;
 import com.intecx.inscope.security.UserPrincipal;
+import com.intecx.inscope.service.ProjectEstimationService;
 import com.intecx.inscope.service.ProjectService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +41,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProjectController {
 
     private final ProjectService projectService;
+    private final ProjectEstimationService projectEstimationService;
 
     @Operation(summary = "Buscar proyectos con sus estimaciones guardadas")
     @ApiResponses({
@@ -114,6 +118,21 @@ public class ProjectController {
     @PreAuthorize("hasAuthority('project:read')")
     public ResponseEntity<List<ProjectStatusHistoryResponse>> getStatusHistory(@PathVariable UUID id) {
         return ResponseEntity.ok(projectService.getStatusHistory(id));
+    }
+
+    @Operation(summary = "Calcular tiempo y costo del proyecto aplicando contingencia")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Cálculo de contingencia obtenido"),
+            @ApiResponse(responseCode = "400", description = "Datos base inválidos"),
+            @ApiResponse(responseCode = "404", description = "Proyecto o configuración de riesgo no encontrada")
+    })
+    @PostMapping("/{id}/contingency")
+    @PreAuthorize("hasAuthority('estimation:read')")
+    public ResponseEntity<ProjectContingencyResponse> calculateContingency(
+            @PathVariable UUID id,
+            @Valid @RequestBody ProjectContingencyRequest request
+    ) {
+        return ResponseEntity.ok(projectEstimationService.calculate(id, request));
     }
 
     @Operation(summary = "Eliminar un proyecto en estado Borrador o Rechazado")
