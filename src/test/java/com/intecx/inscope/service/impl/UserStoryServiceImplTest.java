@@ -8,7 +8,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.intecx.inscope.dto.request.userstory.CreateUserStoryRequest;
+import com.intecx.inscope.dto.request.userstory.UpdateUserStoryRequest;
 import com.intecx.inscope.entity.Project;
+import com.intecx.inscope.entity.UserStory;
 import com.intecx.inscope.exception.ConflictException;
 import com.intecx.inscope.exception.ResourceNotFoundException;
 import com.intecx.inscope.mapper.UserStoryMapper;
@@ -89,5 +91,29 @@ class UserStoryServiceImplTest {
 
         assertThrows(ConflictException.class, () -> userStoryService.delete(storyId, UUID.randomUUID()));
         verify(userStoryRepository, never()).save(any());
+    }
+
+    @Test
+    void updatesOnlyProvidedStoryFields() {
+        UUID storyId = UUID.randomUUID();
+        UUID projectId = UUID.randomUUID();
+        UserStory story = UserStory.builder()
+                .id(storyId)
+                .project(Project.builder().id(projectId).build())
+                .title("Título anterior")
+                .description("Descripción anterior")
+                .acceptanceCriteria("")
+                .build();
+        when(userStoryRepository.findActiveById(storyId)).thenReturn(Optional.of(story));
+        when(userStoryRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        var response = userStoryService.update(
+                storyId,
+                new UpdateUserStoryRequest("Título nuevo", null, null, null, null, null),
+                UUID.randomUUID()
+        );
+
+        assertEquals("Título nuevo", response.title());
+        assertEquals("Descripción anterior", response.description());
     }
 }

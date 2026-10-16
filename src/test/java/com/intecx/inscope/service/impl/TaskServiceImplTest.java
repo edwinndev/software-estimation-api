@@ -9,7 +9,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.intecx.inscope.dto.request.task.CreateTaskRequest;
+import com.intecx.inscope.dto.request.task.UpdateTaskRequest;
 import com.intecx.inscope.entity.Project;
+import com.intecx.inscope.entity.Task;
 import com.intecx.inscope.entity.TechnicalProfile;
 import com.intecx.inscope.entity.UserStory;
 import com.intecx.inscope.enumeration.ExperienceLevel;
@@ -145,4 +147,48 @@ class TaskServiceImplTest {
         ));
         verify(taskRepository, never()).save(any());
     }
+
+        @Test
+        void updatesOnlyProvidedTaskFields() {
+                UUID taskId = UUID.randomUUID();
+                Task task = existingTask(taskId);
+                when(taskRepository.findActiveById(taskId)).thenReturn(Optional.of(task));
+                when(taskRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+                var response = taskService.update(
+                                taskId,
+                                new UpdateTaskRequest("Título nuevo", null, null, null),
+                                UUID.randomUUID()
+                );
+
+                assertEquals("Título nuevo", response.title());
+                assertEquals("Descripción anterior", response.description());
+        }
+
+        @Test
+        void softDeletesTaskWithoutDeletingItsAssignments() {
+                UUID taskId = UUID.randomUUID();
+                Task task = existingTask(taskId);
+                when(taskRepository.findActiveById(taskId)).thenReturn(Optional.of(task));
+                when(taskRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+                taskService.delete(taskId, UUID.randomUUID());
+
+                org.mockito.ArgumentCaptor<Task> taskCaptor = org.mockito.ArgumentCaptor.forClass(Task.class);
+                verify(taskRepository).save(taskCaptor.capture());
+                org.junit.jupiter.api.Assertions.assertNotNull(taskCaptor.getValue().getDeletedAt());
+        }
+
+        private Task existingTask(UUID taskId) {
+                return Task.builder()
+                                .id(taskId)
+                                .story(UserStory.builder()
+                                                .id(UUID.randomUUID())
+                                                .project(Project.builder().id(UUID.randomUUID()).build())
+                                                .build())
+                                .title("Título anterior")
+                                .description("Descripción anterior")
+                                .estimateHours(4)
+                                .build();
+        }
 }
