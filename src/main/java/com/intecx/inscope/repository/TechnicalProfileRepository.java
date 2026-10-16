@@ -1,6 +1,8 @@
 package com.intecx.inscope.repository;
 
 import com.intecx.inscope.entity.TechnicalProfile;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,6 +13,10 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TechnicalProfileRepository extends JpaRepository<TechnicalProfile, UUID>, JpaSpecificationExecutor<TechnicalProfile> {
+
+    @Query("SELECT p FROM TechnicalProfile p WHERE p.id IN :ids "
+            + "AND p.deletedAt IS NULL AND p.isActive = true")
+    List<TechnicalProfile> findActiveByIds(@Param("ids") Collection<UUID> ids);
 
     @Query("SELECT p FROM TechnicalProfile p WHERE LOWER(p.email) = LOWER(:email) AND p.deletedAt IS NULL")
     Optional<TechnicalProfile> findActiveByEmail(@Param("email") String email);
