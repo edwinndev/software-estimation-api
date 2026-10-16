@@ -19,6 +19,7 @@ import com.intecx.inscope.mapper.ProjectMapper;
 import com.intecx.inscope.repository.EstimationSnapshotRepository;
 import com.intecx.inscope.repository.ProjectRepository;
 import com.intecx.inscope.repository.ProjectStatusHistoryRepository;
+import com.intecx.inscope.repository.UserStoryRepository;
 import com.intecx.inscope.repository.UserRepository;
 import com.intecx.inscope.service.ProjectService;
 import java.time.LocalDateTime;
@@ -47,6 +48,7 @@ public class ProjectServiceImpl implements ProjectService {
     private final ProjectRepository projectRepository;
     private final EstimationSnapshotRepository estimationSnapshotRepository;
     private final ProjectStatusHistoryRepository projectStatusHistoryRepository;
+    private final UserStoryRepository userStoryRepository;
     private final UserRepository userRepository;
     private final ProjectMapper projectMapper;
 
@@ -129,6 +131,9 @@ public class ProjectServiceImpl implements ProjectService {
         Project project = projectRepository.findActiveById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado"));
         requireDeletableStatus(project.getStatus());
+        if (userStoryRepository.existsActiveByProjectId(id)) {
+            throw new ConflictException("No se puede eliminar el proyecto mientras tenga historias activas");
+        }
 
         project.setDeletedAt(LocalDateTime.now());
         project.setDeletedBy(actorId);
