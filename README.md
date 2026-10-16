@@ -130,4 +130,5 @@ Hoy solo hay código en `common`, `exception` y `config`, además del esquema y 
 
 - Paginación y filtros: `docs/pagination.md`
 - Errores: `docs/errors.md`
+- API de historias, tareas y despliegue: `docs/backlog-api.md`
 - Convenciones del agente: `AGENTS.md`
