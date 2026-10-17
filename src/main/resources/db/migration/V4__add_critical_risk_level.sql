@@ -1,0 +1,1 @@
+ALTER TYPE in_scope.risk_level ADD VALUE IF NOT EXISTS 'CRITICAL';

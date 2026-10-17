@@ -62,3 +62,4 @@ public class Project extends BaseAuditEntity {
     @Column(name = "status", nullable = false, columnDefinition = "in_scope.project_status")
     private ProjectStatus status = ProjectStatus.DRAFT;
 }
+   
