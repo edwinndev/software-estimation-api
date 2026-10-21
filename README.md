@@ -34,7 +34,7 @@ CREATE DATABASE in_scope_db;
 .\mvnw.cmd spring-boot:run
 ```
 
-Al arrancar, Flyway crea el esquema `in_scope`, las tablas (`V1__schema.sql`) y los datos iniciales (`V2__seed.sql`).
+Al arrancar, Flyway crea el esquema `in_scope` con todas las tablas (`V1__schema.sql`) y los datos iniciales (`V2__seed.sql`). Solo hay esas dos migraciones.
 
 La API queda en [http://localhost:8080](http://localhost:8080).
 
@@ -43,33 +43,44 @@ La API queda en [http://localhost:8080](http://localhost:8080).
 | [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html) | Documentación interactiva |
 | [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)         | Especificación OpenAPI    |
 
-## Configuración y Variables de Entorno
+## Perfiles y secretos
 
-La configuración del backend admite lectura directa desde el archivo `.env` o desde las variables de entorno del sistema operativo en producción (sin requerir Docker):
+| Perfil | Uso | Secretos |
+| :--- | :--- | :--- |
+| `dev` (default) | Local | Archivo `.env` (ver `.env.example`) |
+| `prod` | Azure | Azure Key Vault + Managed Identity |
 
-| Categoría | Variable | Valor por defecto | Descripción |
-| :--- | :--- | :--- | :--- |
-| **Servidor** | `SERVER_PORT` | `8080` | Puerto HTTP de la API |
-| **Base de Datos** | `SPRING_DATASOURCE_URL`<br>`SPRING_DATASOURCE_USERNAME`<br>`SPRING_DATASOURCE_PASSWORD` | `jdbc:postgresql://localhost:5432/in_scope_db`<br>`postgres`<br>`root` | Conexión JDBC PostgreSQL |
-| **Correo SMTP** | `SPRING_MAIL_HOST`<br>`SPRING_MAIL_PORT`<br>`SPRING_MAIL_USERNAME`<br>`SPRING_MAIL_PASSWORD` | `smtp.gmail.com`<br>`587`<br>`jheann.elec@gmail.com`<br>`ufuisgqplvayeigk` | Servidor SMTP para correos OTP |
-| **CORS** | `IN_SCOPE_CORS_ALLOWED_ORIGINS` | `http://localhost:3000` | Orígenes HTTP permitidos |
-| **Seguridad JWT** | `IN_SCOPE_JWT_SECRET`<br>`IN_SCOPE_JWT_EXPIRATION_MS`<br>`IN_SCOPE_JWT_REFRESH_EXPIRATION_MS` | *(secreto 64 bytes)*<br>`86400000` (24h)<br>`604800000` (7 días) | Clave de firma y expiración de tokens |
+```bash
+# Local
+cp .env.example .env
+./mvnw spring-boot:run
 
-### Despliegue en Producción (sin Docker)
+# Azure / producción
+export SPRING_PROFILES_ACTIVE=prod
+export AZURE_KEYVAULT_ENDPOINT=https://<tu-vault>.vault.azure.net/
+java -jar target/inscope-api-0.0.1.jar
+```
 
-1. Crear el archivo `.env` en la raíz junto al JAR basándote en `.env.example`:
-   ```bash
-   cp .env.example .env
-   # Editar .env con credenciales reales de producción
-   ```
-2. Compilar el ejecutable JAR:
-   ```bash
-   ./mvnw clean package -DskipTests
-   ```
-3. Ejecutar la API en el servidor:
-   ```bash
-   java -jar target/inscope-api-0.0.1.jar
-   ```
+### Secretos a crear en Key Vault (prod)
+
+| Nombre en Key Vault | Propiedad Spring |
+| :--- | :--- |
+| `spring-datasource-url` | `spring.datasource.url` |
+| `spring-datasource-username` | `spring.datasource.username` |
+| `spring-datasource-password` | `spring.datasource.password` |
+| `spring-mail-username` | `spring.mail.username` |
+| `spring-mail-password` | `spring.mail.password` |
+| `in-scope-jwt-secret` | `in-scope.jwt.secret` |
+| `in-scope-cors-allowed-origins` | `in-scope.cors.allowed-origins` |
+| `in-scope-bunny-access-key` | `in-scope.bunny.access-key` |
+
+En la VM/App Service solo defines:
+- `SPRING_PROFILES_ACTIVE=prod`
+- `AZURE_KEYVAULT_ENDPOINT=https://<vault>.vault.azure.net/`
+
+Activa **Managed Identity** en la VM/App Service y asígnale rol **Key Vault Secrets User** (Get/List) sobre el vault.
+
+Host/zone de Bunny y expiración JWT están en `application.yaml` (no van al vault).
 
 ## Usuario inicial
 
@@ -99,7 +110,7 @@ Cambiar la contraseña antes de cualquier despliegue real.
 src/main/java/com/intecx/inscope/
   InScopeApplication.java         Punto de entrada
   rest/           Controladores REST (reciben la petición y delegan al servicio)
-  service/        Lógica de negocio
+  service/        Interfaces de negocio (+ impl/ y support/ para helpers)
   repository/     Repositorios Spring Data JPA (extienden JpaSpecificationExecutor para listados)
   entity/         Entidades JPA (una por tabla)
   enumeration/    Enums del dominio (espejo de los tipos enumerados de PostgreSQL)
@@ -114,8 +125,9 @@ src/main/java/com/intecx/inscope/
 
 src/main/resources/
   application.yaml
-  db/migration/   V1__schema.sql (tablas) y V2__seed.sql (datos iniciales)
-  templates/      Plantillas (por ahora vacía)
+  db/migration/   V1__schema.sql (esquema completo) y V2__seed.sql (roles, permisos y admin)
+  templates/email/  Plantillas FreeMarker (layout, otp, invitation, welcome)
+  logo/             Logos (intecx-dark-logo.png embebido en correos)
 
 src/test/java/    Pruebas (por ahora solo EstimationApiApplicationTests)
 docs/             Documentación detallada
@@ -130,5 +142,4 @@ Hoy solo hay código en `common`, `exception` y `config`, además del esquema y 
 
 - Paginación y filtros: `docs/pagination.md`
 - Errores: `docs/errors.md`
-- API de historias, tareas y despliegue: `docs/backlog-api.md`
 - Convenciones del agente: `AGENTS.md`

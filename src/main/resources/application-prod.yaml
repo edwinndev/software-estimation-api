@@ -1,0 +1,33 @@
+# Perfil Azure. Secretos desde Key Vault (Managed Identity).
+# En la VM/App Service:
+#   SPRING_PROFILES_ACTIVE=prod
+#   AZURE_KEYVAULT_ENDPOINT=https://<nombre>.vault.azure.net/
+#
+# Secretos en el vault (guiones → propiedades Spring):
+#   spring-datasource-url
+#   spring-datasource-username
+#   spring-datasource-password
+#   spring-mail-username
+#   spring-mail-password
+#   in-scope-jwt-secret
+#   in-scope-cors-allowed-origins
+#   in-scope-bunny-access-key
+#
+# Alternativa sin vault: mismas claves como variables de entorno
+# (SPRING_DATASOURCE_URL, IN_SCOPE_JWT_SECRET, IN_SCOPE_BUNNY_ACCESS_KEY, …).
+spring:
+  config:
+    activate:
+      on-profile: prod
+  cloud:
+    azure:
+      keyvault:
+        secret:
+          enabled: true
+          property-sources:
+            - endpoint: ${AZURE_KEYVAULT_ENDPOINT}
+
+logging:
+  level:
+    root: WARN
+    com.intecx.inscope: INFO

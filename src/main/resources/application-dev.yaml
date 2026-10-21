@@ -1,0 +1,29 @@
+# Perfil local. Secretos desde .env (cargado en InScopeApplication) o variables de entorno.
+spring:
+  config:
+    activate:
+      on-profile: dev
+  cloud:
+    azure:
+      keyvault:
+        secret:
+          enabled: false
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+  mail:
+    username: ${SPRING_MAIL_USERNAME}
+    password: ${SPRING_MAIL_PASSWORD}
+
+in-scope:
+  bunny:
+    access-key: ${IN_SCOPE_BUNNY_ACCESS_KEY}
+  cors:
+    allowed-origins: ${IN_SCOPE_CORS_ALLOWED_ORIGINS}
+  jwt:
+    secret: ${IN_SCOPE_JWT_SECRET}
+
+logging:
+  level:
+    com.intecx.inscope: DEBUG
