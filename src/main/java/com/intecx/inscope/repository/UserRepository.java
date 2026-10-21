@@ -23,6 +23,4 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
 
     @Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM User u WHERE LOWER(u.email) = LOWER(:email) AND u.deletedAt IS NULL AND u.id <> :id")
     boolean existsActiveByEmailAndIdNot(@Param("email") String email, @Param("id") UUID id);
-
-    boolean existsByRoleId(UUID roleId);
 }

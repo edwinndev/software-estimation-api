@@ -16,7 +16,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -28,7 +30,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "Usuarios", description = "Endpoints para la gestión de usuarios del sistema")
 @RestController
@@ -127,6 +131,57 @@ public class UserController {
     ) {
         MessageResponse response = userService.resendInvitation(id, principal.getId());
         return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "Subir o reemplazar el avatar del usuario (PNG, JPEG o JPG)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Avatar actualizado"),
+            @ApiResponse(responseCode = "400", description = "Archivo inválido o formato no permitido"),
+            @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
+    })
+    @PutMapping(value = "/{id}/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAuthority('user:write')")
+    public ResponseEntity<UserResponse> uploadAvatar(
+            @PathVariable UUID id,
+            @RequestPart("file") MultipartFile file,
+            @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        return ResponseEntity.ok(userService.uploadAvatar(id, file, principal.getId()));
+    }
+
+    @Operation(summary = "Descargar el avatar del usuario")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Avatar descargado"),
+            @ApiResponse(responseCode = "404", description = "Usuario o avatar no encontrado")
+    })
+    @GetMapping("/{id}/avatar")
+    @PreAuthorize("hasAuthority('user:read')")
+    public ResponseEntity<byte[]> downloadAvatar(@PathVariable UUID id) {
+        UserResponse user = userService.getById(id);
+        if (user.avatar() == null) {
+            return ResponseEntity.notFound().build();
+        }
+        byte[] bytes = userService.downloadAvatar(id);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "inline; filename=\"%s\"".formatted(user.avatar().fileName()))
+                .contentType(MediaType.parseMediaType(user.avatar().contentType()))
+                .body(bytes);
+    }
+
+    @Operation(summary = "Eliminar el avatar del usuario")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Avatar eliminado"),
+            @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
+    })
+    @DeleteMapping("/{id}/avatar")
+    @PreAuthorize("hasAuthority('user:write')")
+    public ResponseEntity<Void> deleteAvatar(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        userService.deleteAvatar(id, principal.getId());
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "Eliminar un usuario (borrado lógico)")

@@ -14,6 +14,7 @@ public record UserResponse(
         UUID roleId,
         String roleCode,
         String roleName,
+        FileAttachmentResponse avatar,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
