@@ -45,11 +45,12 @@ public class TechnicalProfileServiceImpl implements TechnicalProfileService {
     @Transactional(readOnly = true)
     public PaginatedResponse<TechnicalProfileResponse> search(QueryRequest query) {
         Specification<TechnicalProfile> notDeletedScope = (root, q, cb) -> cb.isNull(root.get("deletedAt"));
+        QueryRequest searchQuery = query == null ? new QueryRequest(null, null) : query;
         return QuerySupport.search(
                 technicalProfileRepository,
                 notDeletedScope,
                 PROFILE_FIELDS,
-                query,
+                searchQuery,
                 technicalProfileMapper::toResponse,
                 "profilesResponse"
         );

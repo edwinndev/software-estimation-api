@@ -245,6 +245,32 @@ class TechnicalProfileServiceImplTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
+    void searchShouldHandleNullQueryRequestGracefully() {
+        UUID profileId = UUID.randomUUID();
+        TechnicalProfile entity = TechnicalProfile.builder()
+                .id(profileId)
+                .name("Null Query Profile")
+                .email("nullquery@example.com")
+                .role(TechnicalRole.FRONTEND)
+                .experienceLevel(ExperienceLevel.MID)
+                .hourlyRate(new BigDecimal("80.00"))
+                .currency("PEN")
+                .isActive(true)
+                .build();
+
+        when(technicalProfileRepository.findAll(any(Specification.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(entity)));
+
+        PaginatedResponse<TechnicalProfileResponse> response = technicalProfileService.search(null);
+
+        assertNotNull(response);
+        assertNotNull(response.getItems());
+        assertEquals(1, response.getItems().size());
+        assertEquals("Null Query Profile", response.getItems().getFirst().name());
+    }
+
+    @Test
     void createShouldThrowConflictExceptionWhenEmailAlreadyExists() {
         UUID actorId = UUID.randomUUID();
         CreateTechnicalProfileRequest request = CreateTechnicalProfileRequest.builder()
