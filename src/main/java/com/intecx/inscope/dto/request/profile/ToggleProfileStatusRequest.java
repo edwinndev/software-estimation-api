@@ -1,11 +1,19 @@
 package com.intecx.inscope.dto.request.profile;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-public record ToggleProfileStatusRequest(
-        @NotNull(message = "El estado del perfil es obligatorio")
-        @Schema(description = "Nuevo estado activo o inactivo del perfil", example = "true")
-        Boolean isActive
-) {
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ToggleProfileStatusRequest {
+
+    @NotNull(message = "El estado del perfil es obligatorio")
+    private Boolean isActive;
 }

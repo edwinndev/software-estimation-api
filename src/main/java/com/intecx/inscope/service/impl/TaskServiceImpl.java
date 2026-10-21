@@ -84,8 +84,8 @@ public class TaskServiceImpl implements TaskService {
         UserStory story = requireActiveStory(storyId);
         int position = taskRepository.findLastPositionByStoryId(storyId) + 1;
         Task task = taskMapper.toEntity(request, story, position, actorId);
-        if (request.responsibleProfileIds() != null) {
-            task.setResponsibleProfiles(new LinkedHashSet<>(resolveProfiles(request.responsibleProfileIds())));
+        if (request.getResponsibleProfileIds() != null) {
+            task.setResponsibleProfiles(new LinkedHashSet<>(resolveProfiles(request.getResponsibleProfileIds())));
         }
         return taskMapper.toResponse(taskRepository.save(task));
     }
@@ -93,15 +93,11 @@ public class TaskServiceImpl implements TaskService {
     @Override
     @Transactional
     public TaskResponse update(UUID id, UpdateTaskRequest request, UUID actorId) {
-        if (request.title() == null
-                && request.description() == null
-                && request.estimateHours() == null
-                && request.status() == null) {
-            throw new BadRequestException("Debe proporcionar al menos un campo para actualizar");
-        }
-
         Task task = requireActiveTask(id);
         taskMapper.updateEntity(task, request, actorId);
+        if (request.getResponsibleProfileIds() != null) {
+            task.setResponsibleProfiles(new LinkedHashSet<>(resolveProfiles(request.getResponsibleProfileIds())));
+        }
         return taskMapper.toResponse(taskRepository.save(task));
     }
 
@@ -159,7 +155,7 @@ public class TaskServiceImpl implements TaskService {
             return List.of();
         }
 
-        List<TechnicalProfile> profiles = technicalProfileRepository.findActiveByIds(uniqueIds);
+        List<TechnicalProfile> profiles = technicalProfileRepository.findByIdInAndDeletedAtIsNullAndIsActiveTrue(uniqueIds);
         if (profiles.size() != uniqueIds.size()) {
             throw new ResourceNotFoundException("Uno o más perfiles técnicos no existen o están inactivos");
         }
@@ -167,12 +163,12 @@ public class TaskServiceImpl implements TaskService {
     }
 
     private Task requireActiveTask(UUID id) {
-        return taskRepository.findActiveById(id)
+        return taskRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Tarea no encontrada"));
     }
 
     private UserStory requireActiveStory(UUID id) {
-        UserStory story = userStoryRepository.findActiveById(id)
+        UserStory story = userStoryRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Historia de usuario no encontrada"));
         if (story.getProject().getDeletedAt() != null) {
             throw new ResourceNotFoundException("Historia de usuario no encontrada");
@@ -181,7 +177,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     private Project requireActiveProject(UUID id) {
-        return projectRepository.findActiveById(id)
+        return projectRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado"));
     }
 }

@@ -2,6 +2,7 @@ package com.intecx.inscope.service;
 
 import com.intecx.inscope.dto.request.auth.ChangePasswordRequest;
 import com.intecx.inscope.dto.request.auth.LoginRequest;
+import com.intecx.inscope.dto.request.auth.LogoutRequest;
 import com.intecx.inscope.dto.request.auth.RefreshTokenRequest;
 import com.intecx.inscope.dto.request.auth.RequestPasswordResetRequest;
 import com.intecx.inscope.dto.request.auth.ResetPasswordRequest;
@@ -14,7 +15,7 @@ import com.intecx.inscope.dto.response.UserResponse;
 public interface AuthService {
     AuthResponse login(LoginRequest request);
     AuthResponse refreshToken(RefreshTokenRequest request);
-    MessageResponse logout(String bearerToken);
+    MessageResponse logout(String bearerToken, LogoutRequest request);
     UserResponse getCurrentProfile(String email);
     UserResponse updateCurrentProfile(String currentEmail, UpdateProfileRequest request);
     MessageResponse changePassword(String currentEmail, ChangePasswordRequest request);

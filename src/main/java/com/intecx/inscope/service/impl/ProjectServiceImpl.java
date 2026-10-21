@@ -16,11 +16,14 @@ import com.intecx.inscope.enumeration.ProjectStatus;
 import com.intecx.inscope.exception.ConflictException;
 import com.intecx.inscope.exception.ResourceNotFoundException;
 import com.intecx.inscope.mapper.ProjectMapper;
-import com.intecx.inscope.repository.EstimationSnapshotRepository;
+import com.intecx.inscope.entity.FileAttachment;
+import com.intecx.inscope.repository.FileAttachmentRepository;
+import com.intecx.inscope.repository.ReportSnapshotRepository;
 import com.intecx.inscope.repository.ProjectRepository;
 import com.intecx.inscope.repository.ProjectStatusHistoryRepository;
 import com.intecx.inscope.repository.UserStoryRepository;
 import com.intecx.inscope.repository.UserRepository;
+import com.intecx.inscope.service.BunnyStorageService;
 import com.intecx.inscope.service.ProjectService;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -46,11 +49,13 @@ public class ProjectServiceImpl implements ProjectService {
             .sortable("name", "type", "status", "startDate", "plannedDate");
 
     private final ProjectRepository projectRepository;
-    private final EstimationSnapshotRepository estimationSnapshotRepository;
+    private final ReportSnapshotRepository reportSnapshotRepository;
+    private final FileAttachmentRepository fileAttachmentRepository;
     private final ProjectStatusHistoryRepository projectStatusHistoryRepository;
     private final UserStoryRepository userStoryRepository;
     private final UserRepository userRepository;
     private final ProjectMapper projectMapper;
+    private final BunnyStorageService bunnyStorageService;
 
     @Override
     @Transactional(readOnly = true)
@@ -68,6 +73,14 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public ProjectResponse getById(UUID id) {
+        Project project = projectRepository.findByIdAndDeletedAtIsNull(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado"));
+        return toResponsesWithEstimations(List.of(project)).getFirst();
+    }
+
+    @Override
     @Transactional
     public ProjectResponse create(CreateProjectRequest request, UUID actorId) {
         User responsible = userRepository.findActiveById(request.getResponsibleId())
@@ -82,7 +95,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     @Transactional
     public ProjectResponse update(UUID id, UpdateProjectRequest request, UUID actorId) {
-        Project project = projectRepository.findActiveById(id)
+        Project project = projectRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado"));
         if (project.getStatus() != ProjectStatus.DRAFT) {
             throw new ConflictException("Solo se pueden actualizar proyectos en estado Borrador");
@@ -97,7 +110,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     @Transactional
     public ProjectResponse updateStatus(UUID id, UpdateProjectStatusRequest request, UUID actorId) {
-        Project project = projectRepository.findActiveById(id)
+        Project project = projectRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado"));
 
         ProjectStatus currentStatus = project.getStatus();
@@ -118,9 +131,9 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     @Transactional(readOnly = true)
     public List<ProjectStatusHistoryResponse> getStatusHistory(UUID id) {
-        projectRepository.findActiveById(id)
+        projectRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado"));
-        return projectStatusHistoryRepository.findByProjectIdOrderByChangedAtDesc(id).stream()
+        return projectStatusHistoryRepository.findByProjectIdWithChangedBy(id).stream()
                 .map(projectMapper::toStatusHistoryResponse)
                 .toList();
     }
@@ -128,10 +141,10 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     @Transactional
     public void delete(UUID id, UUID actorId) {
-        Project project = projectRepository.findActiveById(id)
+        Project project = projectRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado"));
         requireDeletableStatus(project.getStatus());
-        if (userStoryRepository.existsActiveByProjectId(id)) {
+        if (userStoryRepository.existsByProject_IdAndDeletedAtIsNull(id)) {
             throw new ConflictException("No se puede eliminar el proyecto mientras tenga historias activas");
         }
 
@@ -143,13 +156,21 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     @Transactional
     public void deleteEstimation(UUID projectId, UUID estimationId) {
-        Project project = projectRepository.findActiveById(projectId)
+        Project project = projectRepository.findByIdAndDeletedAtIsNull(projectId)
                 .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado"));
         requireDeletableStatus(project.getStatus());
 
-        var estimation = estimationSnapshotRepository.findActiveByIdAndProjectId(estimationId, projectId)
+        var estimation = reportSnapshotRepository
+                .findByIdAndProject_IdAndProject_DeletedAtIsNull(estimationId, projectId)
                 .orElseThrow(() -> new ResourceNotFoundException("Estimación no encontrada"));
-        estimationSnapshotRepository.delete(estimation);
+        FileAttachment file = estimation.getFile();
+        if (file != null) {
+            estimation.setFile(null);
+            reportSnapshotRepository.saveAndFlush(estimation);
+            bunnyStorageService.delete(file.getStoragePath());
+            fileAttachmentRepository.delete(file);
+        }
+        reportSnapshotRepository.delete(estimation);
     }
 
     private List<ProjectResponse> toResponsesWithEstimations(List<Project> projects) {
@@ -160,7 +181,7 @@ public class ProjectServiceImpl implements ProjectService {
         List<UUID> projectIds = projects.stream().map(Project::getId).toList();
         return projectMapper.toResponses(
                 projects,
-                estimationSnapshotRepository.findSummariesByProjectIds(projectIds)
+                reportSnapshotRepository.findByProjectIds(projectIds)
         );
     }
 

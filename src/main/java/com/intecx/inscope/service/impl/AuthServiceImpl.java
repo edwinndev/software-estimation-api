@@ -2,6 +2,7 @@ package com.intecx.inscope.service.impl;
 
 import com.intecx.inscope.dto.request.auth.ChangePasswordRequest;
 import com.intecx.inscope.dto.request.auth.LoginRequest;
+import com.intecx.inscope.dto.request.auth.LogoutRequest;
 import com.intecx.inscope.dto.request.auth.RefreshTokenRequest;
 import com.intecx.inscope.dto.request.auth.RequestPasswordResetRequest;
 import com.intecx.inscope.dto.request.auth.ResetPasswordRequest;
@@ -29,6 +30,7 @@ import java.util.Date;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -96,6 +98,8 @@ public class AuthServiceImpl implements AuthService {
             throw new UnauthorizedException("La cuenta de usuario está desactivada");
         }
 
+        blacklistIfValid(refreshTokenStr);
+
         String newToken = tokenProvider.generateToken(user);
         String newRefreshToken = tokenProvider.generateRefreshToken(user);
         long expiresIn = tokenProvider.getExpirationInSeconds();
@@ -121,15 +125,22 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public MessageResponse logout(String bearerToken) {
+    public MessageResponse logout(String bearerToken, LogoutRequest request) {
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            String token = bearerToken.substring(7);
-            if (tokenProvider.validateToken(token)) {
-                Date expirationDate = tokenProvider.getExpirationDateFromToken(token);
-                blacklistService.blacklistToken(token, expirationDate);
-            }
+            blacklistIfValid(bearerToken.substring(7));
         }
+        if (request != null && request.getRefreshToken() != null && !request.getRefreshToken().isBlank()) {
+            blacklistIfValid(request.getRefreshToken().trim());
+        }
+        SecurityContextHolder.clearContext();
         return new MessageResponse("Sesión cerrada exitosamente");
+    }
+
+    private void blacklistIfValid(String token) {
+        if (tokenProvider.validateToken(token)) {
+            Date expirationDate = tokenProvider.getExpirationDateFromToken(token);
+            blacklistService.blacklistToken(token, expirationDate);
+        }
     }
 
     @Override
@@ -202,7 +213,7 @@ public class AuthServiceImpl implements AuthService {
         tokenRepository.save(resetToken);
 
         log.info("[OTP] Código de verificación generado para {}: {}", email, otpCode);
-        emailService.sendOtpEmail(email, otpCode);
+        emailService.sendOtpEmail(email, otpCode, OTP_EXPIRATION_MINUTES);
 
         return new MessageResponse("Código de verificación enviado al correo electrónico");
     }
@@ -253,12 +264,16 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new ResourceNotFoundException("No existe una cuenta con este correo electrónico"));
 
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        user.setActive(true);
         user.setUpdatedBy(user.getId());
         userRepository.save(user);
 
         resetToken.setConsumedAt(LocalDateTime.now());
         tokenRepository.save(resetToken);
 
+        emailService.sendWelcomeEmail(user.getEmail(), user.getFirstName());
+
         return new MessageResponse("Contraseña restablecida exitosamente");
     }
 }
+

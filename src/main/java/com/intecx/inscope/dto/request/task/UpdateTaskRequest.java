@@ -1,21 +1,18 @@
 package com.intecx.inscope.dto.request.task;
 
-import com.intecx.inscope.enumeration.TaskStatus;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
+import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
-public record UpdateTaskRequest(
-        @Size(max = 150, message = "El título no puede superar los 150 caracteres")
-        @Pattern(regexp = ".*\\S.*", message = "El título no puede estar vacío")
-        String title,
+@Getter
+@Setter
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
+public class UpdateTaskRequest extends CreateTaskRequest {
 
-        @Pattern(regexp = ".*\\S.*", message = "La descripción no puede estar vacía")
-        String description,
-
-        @Positive(message = "La estimación en horas debe ser mayor que cero")
-        Integer estimateHours,
-
-        TaskStatus status
-) {
+    private UUID id;
 }

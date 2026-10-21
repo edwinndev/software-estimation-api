@@ -18,6 +18,7 @@ public record ProjectResponse(
         UUID responsibleId,
         ProjectStatus status,
         LocalDateTime createdAt,
+        LocalDateTime updatedAt,
         List<ProjectEstimationResponse> estimations
 ) {
 }

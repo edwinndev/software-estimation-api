@@ -9,18 +9,25 @@ import com.intecx.inscope.dto.request.user.ToggleUserStatusRequest;
 import com.intecx.inscope.dto.request.user.UpdateUserRequest;
 import com.intecx.inscope.dto.response.MessageResponse;
 import com.intecx.inscope.dto.response.UserResponse;
+import com.intecx.inscope.entity.FileAttachment;
+import com.intecx.inscope.entity.PasswordResetToken;
 import com.intecx.inscope.entity.Role;
 import com.intecx.inscope.entity.User;
+import com.intecx.inscope.enumeration.AttachmentType;
 import com.intecx.inscope.exception.BadRequestException;
 import com.intecx.inscope.exception.ConflictException;
 import com.intecx.inscope.exception.ResourceNotFoundException;
 import com.intecx.inscope.mapper.UserMapper;
-import com.intecx.inscope.entity.PasswordResetToken;
+import com.intecx.inscope.repository.FileAttachmentRepository;
 import com.intecx.inscope.repository.PasswordResetTokenRepository;
 import com.intecx.inscope.repository.RoleRepository;
 import com.intecx.inscope.repository.UserRepository;
+import com.intecx.inscope.service.BunnyStorageService;
 import com.intecx.inscope.service.EmailService;
 import com.intecx.inscope.service.UserService;
+import com.intecx.inscope.service.support.AvatarImageSupport;
+import com.intecx.inscope.service.support.BunnyPaths;
+import java.io.IOException;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -29,10 +36,13 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
+
+    private static final int INVITATION_EXPIRATION_HOURS = 24;
 
     private static final QueryFields USER_FIELDS = QueryFields.sortingBy("createdAt")
             .filter("search", "firstName", "lastName", "email")
@@ -47,9 +57,11 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordResetTokenRepository tokenRepository;
+    private final FileAttachmentRepository fileAttachmentRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final BunnyStorageService bunnyStorageService;
     private final SecureRandom secureRandom = new SecureRandom();
 
     @Override
@@ -89,7 +101,12 @@ public class UserServiceImpl implements UserService {
         User savedUser = userRepository.save(user);
 
         String otpCode = generateAndSaveOtpToken(savedUser.getEmail());
-        emailService.sendInvitationOtpEmail(savedUser.getEmail(), savedUser.getFirstName(), otpCode);
+        emailService.sendInvitationOtpEmail(
+                savedUser.getEmail(),
+                savedUser.getFirstName(),
+                otpCode,
+                INVITATION_EXPIRATION_HOURS
+        );
 
         return userMapper.toResponse(savedUser);
     }
@@ -150,7 +167,12 @@ public class UserServiceImpl implements UserService {
         }
 
         String otpCode = generateAndSaveOtpToken(user.getEmail());
-        emailService.sendInvitationOtpEmail(user.getEmail(), user.getFirstName(), otpCode);
+        emailService.sendInvitationOtpEmail(
+                user.getEmail(),
+                user.getFirstName(),
+                otpCode,
+                INVITATION_EXPIRATION_HOURS
+        );
 
         return new MessageResponse("Invitación reenviada exitosamente a " + user.getEmail() + " con código OTP de activación");
     }
@@ -158,7 +180,7 @@ public class UserServiceImpl implements UserService {
     private String generateAndSaveOtpToken(String email) {
         String otpCode = String.format("%06d", secureRandom.nextInt(1000000));
         String codeHash = passwordEncoder.encode(otpCode);
-        LocalDateTime expiresAt = LocalDateTime.now().plusHours(24);
+        LocalDateTime expiresAt = LocalDateTime.now().plusHours(INVITATION_EXPIRATION_HOURS);
 
         PasswordResetToken resetToken = PasswordResetToken.builder()
                 .email(email)
@@ -172,6 +194,75 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    public UserResponse uploadAvatar(UUID id, MultipartFile file, UUID actorId) {
+        User user = userRepository.findActiveById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+        String extension = AvatarImageSupport.resolveExtension(file);
+        String fileName = id + "." + extension;
+        String storagePath = BunnyPaths.avatar(id, extension);
+        String contentType = AvatarImageSupport.normalizeContentType(file.getContentType(), extension);
+
+        byte[] bytes;
+        try {
+            bytes = file.getBytes();
+        } catch (IOException ex) {
+            throw new BadRequestException("No se pudo leer el archivo de avatar");
+        }
+
+        FileAttachment previous = user.getAvatar();
+        if (previous != null) {
+            user.setAvatar(null);
+            userRepository.saveAndFlush(user);
+            bunnyStorageService.delete(previous.getStoragePath());
+            fileAttachmentRepository.delete(previous);
+            fileAttachmentRepository.flush();
+        }
+
+        bunnyStorageService.upload(storagePath, bytes, contentType);
+        FileAttachment avatar = fileAttachmentRepository.save(FileAttachment.builder()
+                .type(AttachmentType.AVATAR)
+                .fileName(fileName)
+                .contentType(contentType)
+                .sizeBytes((long) bytes.length)
+                .storagePath(storagePath)
+                .createdAt(LocalDateTime.now())
+                .createdBy(actorId)
+                .build());
+
+        user.setAvatar(avatar);
+        user.setUpdatedBy(actorId);
+        return userMapper.toResponse(userRepository.save(user));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public byte[] downloadAvatar(UUID id) {
+        User user = userRepository.findActiveById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+        if (user.getAvatar() == null) {
+            throw new ResourceNotFoundException("El usuario no tiene avatar");
+        }
+        return bunnyStorageService.download(user.getAvatar().getStoragePath());
+    }
+
+    @Override
+    @Transactional
+    public void deleteAvatar(UUID id, UUID actorId) {
+        User user = userRepository.findActiveById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+        FileAttachment avatar = user.getAvatar();
+        if (avatar == null) {
+            return;
+        }
+        user.setAvatar(null);
+        user.setUpdatedBy(actorId);
+        userRepository.saveAndFlush(user);
+        bunnyStorageService.delete(avatar.getStoragePath());
+        fileAttachmentRepository.delete(avatar);
+    }
+
+    @Override
+    @Transactional
     public void delete(UUID id, UUID actorId) {
         User user = userRepository.findActiveById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
@@ -181,6 +272,14 @@ public class UserServiceImpl implements UserService {
         }
         if (user.getId().equals(actorId)) {
             throw new BadRequestException("No puedes eliminar tu propia cuenta de usuario");
+        }
+
+        FileAttachment avatar = user.getAvatar();
+        if (avatar != null) {
+            user.setAvatar(null);
+            userRepository.saveAndFlush(user);
+            bunnyStorageService.delete(avatar.getStoragePath());
+            fileAttachmentRepository.delete(avatar);
         }
 
         user.setDeletedAt(LocalDateTime.now());

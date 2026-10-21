@@ -1,29 +1,37 @@
 package com.intecx.inscope.dto.request.task;
 
 import com.intecx.inscope.enumeration.TaskStatus;
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
-public record CreateTaskRequest(
-        @NotBlank(message = "El título de la tarea es obligatorio")
-        @Size(max = 150, message = "El título no puede superar los 150 caracteres")
-        String title,
+@Getter
+@Setter
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
+public class CreateTaskRequest {
 
-        @NotBlank(message = "La descripción de la tarea es obligatoria")
-        String description,
+    @NotBlank(message = "El título de la tarea es obligatorio")
+    @Size(max = 150, message = "El título no puede superar los 150 caracteres")
+    private String title;
 
-        @NotNull(message = "La estimación en horas es obligatoria")
-        @Positive(message = "La estimación en horas debe ser mayor que cero")
-        Integer estimateHours,
+    @NotBlank(message = "La descripción de la tarea es obligatoria")
+    private String description;
 
-        TaskStatus status,
+    @NotNull(message = "La estimación en horas es obligatoria")
+    @Positive(message = "La estimación en horas debe ser mayor que cero")
+    private Integer estimateHours;
 
-        @Schema(description = "Identificadores únicos de perfiles técnicos activos")
-        List<UUID> responsibleProfileIds
-) {
+    private TaskStatus status;
+
+    private List<UUID> responsibleProfileIds;
 }

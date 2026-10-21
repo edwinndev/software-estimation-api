@@ -1,6 +1,6 @@
 package com.intecx.inscope.rest;
 
-import com.intecx.inscope.dto.request.project.RiskLevelUpdateRequest;
+import com.intecx.inscope.dto.request.risk.UpdateRiskConfigRequest;
 import com.intecx.inscope.dto.response.RiskConfigResponse;
 import com.intecx.inscope.security.UserPrincipal;
 import com.intecx.inscope.service.RiskConfigService;
@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "Riesgos", description = "Configuración de riesgo y contingencia por proyecto")
+@Tag(name = "Riesgos", description = "Endpoints para la configuración de riesgo y contingencia por proyecto")
 @RestController
 @RequestMapping("/api/v1/projects/{projectId}/risk-config")
 @RequiredArgsConstructor
@@ -31,8 +31,8 @@ public class RiskConfigController {
 
     @Operation(summary = "Obtener la configuración de riesgo de un proyecto")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Configuración obtenida"),
-            @ApiResponse(responseCode = "404", description = "Configuración no encontrada")
+            @ApiResponse(responseCode = "200", description = "Configuración obtenida exitosamente"),
+            @ApiResponse(responseCode = "404", description = "Configuración de riesgo no encontrada")
     })
     @GetMapping
     @PreAuthorize("hasAuthority('risk:read')")
@@ -42,15 +42,15 @@ public class RiskConfigController {
 
     @Operation(summary = "Actualizar la configuración de riesgo de un proyecto")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Configuración actualizada"),
-            @ApiResponse(responseCode = "404", description = "Proyecto no encontrado"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos")
+            @ApiResponse(responseCode = "200", description = "Configuración actualizada exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
+            @ApiResponse(responseCode = "404", description = "Proyecto no encontrado")
     })
     @PutMapping
     @PreAuthorize("hasAuthority('risk:write')")
     public ResponseEntity<RiskConfigResponse> update(
             @PathVariable UUID projectId,
-            @Valid @RequestBody RiskLevelUpdateRequest request,
+            @Valid @RequestBody UpdateRiskConfigRequest request,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
         return ResponseEntity.ok(riskConfigService.update(projectId, request, principal.getId()));

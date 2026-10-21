@@ -2,6 +2,7 @@ package com.intecx.inscope.rest;
 
 import com.intecx.inscope.dto.request.auth.ChangePasswordRequest;
 import com.intecx.inscope.dto.request.auth.LoginRequest;
+import com.intecx.inscope.dto.request.auth.LogoutRequest;
 import com.intecx.inscope.dto.request.auth.RefreshTokenRequest;
 import com.intecx.inscope.dto.request.auth.RequestPasswordResetRequest;
 import com.intecx.inscope.dto.request.auth.ResetPasswordRequest;
@@ -18,7 +19,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -59,13 +59,16 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Cerrar sesión e invalidar la sesión/token activo")
+    @Operation(summary = "Cerrar sesión e invalidar access token y refresh token")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Sesión cerrada exitosamente")
     })
     @PostMapping("/logout")
-    public ResponseEntity<MessageResponse> logout(@RequestHeader(value = "Authorization", required = false) String bearerToken) {
-        MessageResponse response = authService.logout(bearerToken);
+    public ResponseEntity<MessageResponse> logout(
+            @RequestHeader(value = "Authorization", required = false) String bearerToken,
+            @RequestBody(required = false) LogoutRequest request
+    ) {
+        MessageResponse response = authService.logout(bearerToken, request);
         return ResponseEntity.ok(response);
     }
 

@@ -8,6 +8,7 @@ import com.intecx.inscope.dto.request.user.UpdateUserRequest;
 import com.intecx.inscope.dto.response.MessageResponse;
 import com.intecx.inscope.dto.response.UserResponse;
 import java.util.UUID;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface UserService {
     PaginatedResponse<UserResponse> search(QueryRequest query);
@@ -16,5 +17,8 @@ public interface UserService {
     UserResponse update(UUID id, UpdateUserRequest request, UUID actorId);
     UserResponse changeStatus(UUID id, ToggleUserStatusRequest request, UUID actorId);
     MessageResponse resendInvitation(UUID id, UUID actorId);
+    UserResponse uploadAvatar(UUID id, MultipartFile file, UUID actorId);
+    byte[] downloadAvatar(UUID id);
+    void deleteAvatar(UUID id, UUID actorId);
     void delete(UUID id, UUID actorId);
 }

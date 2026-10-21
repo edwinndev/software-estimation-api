@@ -34,17 +34,17 @@ public class TechnicalProfileMapper implements BaseMapper<TechnicalProfile, Tech
             return null;
         }
 
-        boolean activeStatus = request.isActive() == null || request.isActive();
-        String currencyCode = request.currency() != null && !request.currency().isBlank()
-                ? request.currency().trim().toUpperCase()
+        boolean activeStatus = request.getIsActive() == null || request.getIsActive();
+        String currencyCode = request.getCurrency() != null && !request.getCurrency().isBlank()
+                ? request.getCurrency().trim().toUpperCase()
                 : "PEN";
 
         return TechnicalProfile.builder()
-                .name(request.name().trim())
-                .email(request.email().trim().toLowerCase())
-                .role(request.role())
-                .experienceLevel(request.experienceLevel())
-                .hourlyRate(request.hourlyRate())
+                .name(request.getName().trim())
+                .email(request.getEmail().trim().toLowerCase())
+                .role(request.getRole())
+                .experienceLevel(request.getExperienceLevel())
+                .hourlyRate(request.getHourlyRate())
                 .currency(currencyCode)
                 .isActive(activeStatus)
                 .createdBy(actorId)

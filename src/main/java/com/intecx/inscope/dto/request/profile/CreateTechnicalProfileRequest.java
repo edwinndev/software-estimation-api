@@ -2,7 +2,6 @@ package com.intecx.inscope.dto.request.profile;
 
 import com.intecx.inscope.enumeration.ExperienceLevel;
 import com.intecx.inscope.enumeration.TechnicalRole;
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
@@ -12,39 +11,42 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
-public record CreateTechnicalProfileRequest(
-        @NotBlank(message = "El nombre es obligatorio")
-        @Size(min = 2, max = 100, message = "El nombre debe tener entre 2 y 100 caracteres")
-        @Schema(description = "Nombre completo del perfil técnico", example = "Juan Pérez")
-        String name,
+@Getter
+@Setter
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
+public class CreateTechnicalProfileRequest {
 
-        @NotBlank(message = "El correo electrónico es obligatorio")
-        @Email(message = "El correo electrónico no tiene un formato válido")
-        @Size(max = 255, message = "El correo electrónico no debe exceder 255 caracteres")
-        @Schema(description = "Correo electrónico único", example = "juan.perez@empresa.com")
-        String email,
+    @NotBlank(message = "El nombre es obligatorio")
+    @Size(min = 2, max = 100, message = "El nombre debe tener entre 2 y 100 caracteres")
+    private String name;
 
-        @NotNull(message = "El rol técnico es obligatorio")
-        @Schema(description = "Rol técnico desempeñado (FRONTEND, BACKEND, FULLSTACK, QA, DEVOPS, UI_UX_DESIGNER, PRODUCT_MANAGER, TECH_LEAD, FUNCTIONAL_ANALYST, OTHER)", example = "FRONTEND")
-        TechnicalRole role,
+    @NotBlank(message = "El correo electrónico es obligatorio")
+    @Email(message = "El correo electrónico no tiene un formato válido")
+    @Size(max = 255, message = "El correo electrónico no debe exceder 255 caracteres")
+    private String email;
 
-        @NotNull(message = "El nivel de experiencia es obligatorio")
-        @Schema(description = "Nivel de experiencia (JUNIOR, MID, SENIOR, LEAD)", example = "SENIOR")
-        ExperienceLevel experienceLevel,
+    @NotNull(message = "El rol técnico es obligatorio")
+    private TechnicalRole role;
 
-        @NotNull(message = "El costo estándar (CER) por hora es obligatorio")
-        @DecimalMin(value = "0.01", message = "El costo estándar (CER) por hora debe ser mayor a 0")
-        @DecimalMax(value = "9999999999.99", message = "El costo estándar (CER) no puede exceder el límite permitido")
-        @Digits(integer = 10, fraction = 2, message = "El costo estándar (CER) debe tener como máximo 10 dígitos enteros y 2 decimales")
-        @Schema(description = "Costo Estándar por Recurso (CER) por hora", example = "85.00")
-        BigDecimal hourlyRate,
+    @NotNull(message = "El nivel de experiencia es obligatorio")
+    private ExperienceLevel experienceLevel;
 
-        @Pattern(regexp = "^[A-Z]{3}$", message = "La moneda debe tener un formato de 3 letras (ISO 4217)")
-        @Schema(description = "Código de moneda ISO", example = "PEN", defaultValue = "PEN")
-        String currency,
+    @NotNull(message = "El costo estándar (CER) por hora es obligatorio")
+    @DecimalMin(value = "0.01", message = "El costo estándar (CER) por hora debe ser mayor a 0")
+    @DecimalMax(value = "9999999999.99", message = "El costo estándar (CER) no puede exceder el límite permitido")
+    @Digits(integer = 10, fraction = 2, message = "El costo estándar (CER) debe tener como máximo 10 dígitos enteros y 2 decimales")
+    private BigDecimal hourlyRate;
 
-        @Schema(description = "Indica si el perfil se encuentra activo", example = "true", defaultValue = "true")
-        Boolean isActive
-) {
+    @Pattern(regexp = "^[A-Z]{3}$", message = "La moneda debe tener un formato de 3 letras (ISO 4217)")
+    private String currency;
+
+    private Boolean isActive;
 }

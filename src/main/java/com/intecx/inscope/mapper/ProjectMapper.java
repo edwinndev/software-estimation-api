@@ -7,16 +7,20 @@ import com.intecx.inscope.dto.response.ProjectResponse;
 import com.intecx.inscope.dto.response.ProjectStatusHistoryResponse;
 import com.intecx.inscope.entity.Project;
 import com.intecx.inscope.entity.ProjectStatusHistory;
+import com.intecx.inscope.entity.ReportSnapshot;
 import com.intecx.inscope.entity.User;
-import com.intecx.inscope.repository.EstimationSnapshotProjection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class ProjectMapper {
+
+    private final ReportSnapshotMapper reportSnapshotMapper;
 
     public ProjectResponse toResponse(Project project) {
         return toResponse(project, List.of());
@@ -39,18 +43,16 @@ public class ProjectMapper {
                 .responsibleId(responsibleId)
                 .status(project.getStatus())
                 .createdAt(project.getCreatedAt())
+                .updatedAt(project.getUpdatedAt())
                 .estimations(estimations)
                 .build();
     }
 
-    public List<ProjectResponse> toResponses(
-            List<Project> projects,
-            List<EstimationSnapshotProjection> snapshots
-    ) {
+    public List<ProjectResponse> toResponses(List<Project> projects, List<ReportSnapshot> snapshots) {
         Map<UUID, List<ProjectEstimationResponse>> estimationsByProject = snapshots.stream()
                 .collect(Collectors.groupingBy(
-                        EstimationSnapshotProjection::getProjectId,
-                        Collectors.mapping(this::toEstimationResponse, Collectors.toList())
+                        snapshot -> snapshot.getProject().getId(),
+                        Collectors.mapping(reportSnapshotMapper::toResponse, Collectors.toList())
                 ));
         return projects.stream()
                 .map(project -> toResponse(
@@ -58,18 +60,6 @@ public class ProjectMapper {
                         estimationsByProject.getOrDefault(project.getId(), List.of())
                 ))
                 .toList();
-    }
-
-    private ProjectEstimationResponse toEstimationResponse(EstimationSnapshotProjection snapshot) {
-        return ProjectEstimationResponse.builder()
-                .id(snapshot.getId())
-                .baseEffortPoints(snapshot.getBaseEffortPoints())
-                .totalEffortHours(snapshot.getTotalEffortHours())
-                .totalTime(snapshot.getTotalTime())
-                .timeUnit(snapshot.getTimeUnit())
-                .totalCost(snapshot.getTotalCost())
-                .createdAt(snapshot.getCreatedAt())
-                .build();
     }
 
     public ProjectStatusHistoryResponse toStatusHistoryResponse(ProjectStatusHistory history) {
@@ -86,11 +76,7 @@ public class ProjectMapper {
                 .build();
     }
 
-    public Project toEntity(
-            CreateProjectRequest request,
-            User responsible,
-            UUID actorId
-    ) {
+    public Project toEntity(CreateProjectRequest request, User responsible, UUID actorId) {
         if (request == null) {
             return null;
         }

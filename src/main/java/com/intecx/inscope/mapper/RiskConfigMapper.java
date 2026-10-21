@@ -2,9 +2,9 @@ package com.intecx.inscope.mapper;
 
 import com.intecx.inscope.dto.response.RiskConfigResponse;
 import com.intecx.inscope.entity.RiskConfig;
-import lombok.experimental.UtilityClass;
+import org.springframework.stereotype.Component;
 
-@UtilityClass
+@Component
 public class RiskConfigMapper {
 
     public RiskConfigResponse toResponse(RiskConfig entity) {
@@ -12,9 +12,8 @@ public class RiskConfigMapper {
             return null;
         }
         return RiskConfigResponse.builder()
-        .level(entity.getLevel())
-        .contingencyMargin(entity.getContingencyMargin())
-        .build();
-                
+                .level(entity.getLevel())
+                .contingencyMargin(entity.getContingencyMargin())
+                .build();
     }
 }

@@ -12,6 +12,8 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class UserMapper implements BaseMapper<User, UserResponse> {
 
+    private final FileAttachmentMapper fileAttachmentMapper;
+
     @Override
     public UserResponse toResponse(User user) {
         if (user == null) {
@@ -31,6 +33,7 @@ public class UserMapper implements BaseMapper<User, UserResponse> {
                 .roleId(roleId)
                 .roleCode(roleCode)
                 .roleName(roleName)
+                .avatar(fileAttachmentMapper.toResponse(user.getAvatar()))
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
                 .build();

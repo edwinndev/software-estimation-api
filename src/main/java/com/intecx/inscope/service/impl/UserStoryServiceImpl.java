@@ -9,7 +9,6 @@ import com.intecx.inscope.dto.request.userstory.UpdateUserStoryRequest;
 import com.intecx.inscope.dto.response.UserStoryResponse;
 import com.intecx.inscope.entity.Project;
 import com.intecx.inscope.entity.UserStory;
-import com.intecx.inscope.exception.BadRequestException;
 import com.intecx.inscope.exception.ConflictException;
 import com.intecx.inscope.exception.ResourceNotFoundException;
 import com.intecx.inscope.mapper.UserStoryMapper;
@@ -69,7 +68,7 @@ public class UserStoryServiceImpl implements UserStoryService {
     @Transactional
     public UserStoryResponse create(UUID projectId, CreateUserStoryRequest request, UUID actorId) {
         Project project = requireActiveProject(projectId);
-        String code = request.code().trim().toUpperCase();
+        String code = request.getCode().trim().toUpperCase();
         if (userStoryRepository.existsByProject_IdAndCode(projectId, code)) {
             throw new ConflictException("Ya existe una historia con ese código en el proyecto");
         }
@@ -82,16 +81,13 @@ public class UserStoryServiceImpl implements UserStoryService {
     @Override
     @Transactional
     public UserStoryResponse update(UUID id, UpdateUserStoryRequest request, UUID actorId) {
-        if (request.title() == null
-                && request.description() == null
-                && request.acceptanceCriteria() == null
-                && request.priority() == null
-                && request.status() == null
-                && request.storyPoints() == null) {
-            throw new BadRequestException("Debe proporcionar al menos un campo para actualizar");
+        UserStory story = requireActiveStory(id);
+        String code = request.getCode().trim().toUpperCase();
+        if (!story.getCode().equalsIgnoreCase(code)
+                && userStoryRepository.existsByProject_IdAndCodeAndIdNot(story.getProject().getId(), code, id)) {
+            throw new ConflictException("Ya existe una historia con ese código en el proyecto");
         }
 
-        UserStory story = requireActiveStory(id);
         userStoryMapper.updateEntity(story, request, actorId);
         return userStoryMapper.toResponse(userStoryRepository.save(story));
     }
@@ -100,7 +96,7 @@ public class UserStoryServiceImpl implements UserStoryService {
     @Transactional
     public void delete(UUID id, UUID actorId) {
         UserStory story = requireActiveStory(id);
-        if (taskRepository.existsActiveByStoryId(id)) {
+        if (taskRepository.existsByStory_IdAndDeletedAtIsNull(id)) {
             throw new ConflictException("No se puede eliminar la historia mientras tenga tareas activas");
         }
 
@@ -110,12 +106,12 @@ public class UserStoryServiceImpl implements UserStoryService {
     }
 
     private UserStory requireActiveStory(UUID id) {
-        return userStoryRepository.findActiveById(id)
+        return userStoryRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Historia de usuario no encontrada"));
     }
 
     private Project requireActiveProject(UUID id) {
-        return projectRepository.findActiveById(id)
+        return projectRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado"));
     }
 }

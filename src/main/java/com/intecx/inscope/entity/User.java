@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -44,6 +45,10 @@ public class User extends BaseAuditEntity {
 
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "avatar_id")
+    private FileAttachment avatar;
 
     @Column(name = "is_active", nullable = false)
     private boolean isActive;

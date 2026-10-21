@@ -7,26 +7,16 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TechnicalProfileRepository extends JpaRepository<TechnicalProfile, UUID>, JpaSpecificationExecutor<TechnicalProfile> {
 
-    @Query("SELECT p FROM TechnicalProfile p WHERE p.id IN :ids "
-            + "AND p.deletedAt IS NULL AND p.isActive = true")
-    List<TechnicalProfile> findActiveByIds(@Param("ids") Collection<UUID> ids);
+    Optional<TechnicalProfile> findByIdAndDeletedAtIsNull(UUID id);
 
-    @Query("SELECT p FROM TechnicalProfile p WHERE LOWER(p.email) = LOWER(:email) AND p.deletedAt IS NULL")
-    Optional<TechnicalProfile> findActiveByEmail(@Param("email") String email);
+    List<TechnicalProfile> findByIdInAndDeletedAtIsNullAndIsActiveTrue(Collection<UUID> ids);
 
-    @Query("SELECT p FROM TechnicalProfile p WHERE p.id = :id AND p.deletedAt IS NULL")
-    Optional<TechnicalProfile> findActiveById(@Param("id") UUID id);
+    boolean existsByEmailIgnoreCaseAndDeletedAtIsNull(String email);
 
-    @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM TechnicalProfile p WHERE LOWER(p.email) = LOWER(:email) AND p.deletedAt IS NULL")
-    boolean existsActiveByEmail(@Param("email") String email);
-
-    @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM TechnicalProfile p WHERE LOWER(p.email) = LOWER(:email) AND p.deletedAt IS NULL AND p.id <> :id")
-    boolean existsActiveByEmailAndIdNot(@Param("email") String email, @Param("id") UUID id);
+    boolean existsByEmailIgnoreCaseAndDeletedAtIsNullAndIdNot(String email, UUID id);
 }

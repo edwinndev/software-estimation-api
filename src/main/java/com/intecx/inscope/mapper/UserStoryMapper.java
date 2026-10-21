@@ -38,36 +38,27 @@ public class UserStoryMapper {
     ) {
         return UserStory.builder()
                 .project(project)
-                .code(request.code().trim().toUpperCase())
-                .title(request.title().trim())
-                .description(request.description().trim())
-                .acceptanceCriteria(normalizeOptional(request.acceptanceCriteria()))
-                .priority(request.priority() == null ? StoryPriority.MEDIUM : request.priority())
+                .code(request.getCode().trim().toUpperCase())
+                .title(request.getTitle().trim())
+                .description(request.getDescription().trim())
+                .acceptanceCriteria(normalizeOptional(request.getAcceptanceCriteria()))
+                .priority(request.getPriority() == null ? StoryPriority.MEDIUM : request.getPriority())
                 .status(StoryStatus.DRAFT)
-                .storyPoints(request.storyPoints())
+                .storyPoints(request.getStoryPoints())
                 .position(position)
                 .createdBy(actorId)
                 .build();
     }
 
     public void updateEntity(UserStory story, UpdateUserStoryRequest request, UUID actorId) {
-        if (request.title() != null) {
-            story.setTitle(request.title().trim());
-        }
-        if (request.description() != null) {
-            story.setDescription(request.description().trim());
-        }
-        if (request.acceptanceCriteria() != null) {
-            story.setAcceptanceCriteria(request.acceptanceCriteria().trim());
-        }
-        if (request.priority() != null) {
-            story.setPriority(request.priority());
-        }
-        if (request.status() != null) {
-            story.setStatus(request.status());
-        }
-        if (request.storyPoints() != null) {
-            story.setStoryPoints(request.storyPoints());
+        story.setCode(request.getCode().trim().toUpperCase());
+        story.setTitle(request.getTitle().trim());
+        story.setDescription(request.getDescription().trim());
+        story.setAcceptanceCriteria(normalizeOptional(request.getAcceptanceCriteria()));
+        story.setPriority(request.getPriority() == null ? StoryPriority.MEDIUM : request.getPriority());
+        story.setStoryPoints(request.getStoryPoints());
+        if (request.getStatus() != null) {
+            story.setStatus(request.getStatus());
         }
         story.setUpdatedBy(actorId);
     }
