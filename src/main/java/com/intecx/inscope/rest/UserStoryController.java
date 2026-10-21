@@ -20,14 +20,14 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "Historias de usuario", description = "Gestión de historias y backlog de proyectos")
+@Tag(name = "Historias de usuario", description = "Endpoints para la gestión de historias de usuario del backlog")
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
@@ -35,10 +35,10 @@ public class UserStoryController {
 
     private final UserStoryService userStoryService;
 
-    @Operation(summary = "Buscar historias de un proyecto")
+    @Operation(summary = "Búsqueda paginada de historias de un proyecto")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Listado paginado obtenido"),
-            @ApiResponse(responseCode = "400", description = "Filtros inválidos"),
+            @ApiResponse(responseCode = "200", description = "Listado paginado obtenido exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Filtros o criterios de búsqueda inválidos"),
             @ApiResponse(responseCode = "404", description = "Proyecto no encontrado")
     })
     @PostMapping("/projects/{projectId}/user-stories/search")
@@ -50,12 +50,12 @@ public class UserStoryController {
         return ResponseEntity.ok(userStoryService.searchByProject(projectId, query));
     }
 
-    @Operation(summary = "Crear historia de usuario en un proyecto")
+    @Operation(summary = "Crear una historia de usuario en un proyecto")
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Historia creada"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "201", description = "Historia creada exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
             @ApiResponse(responseCode = "404", description = "Proyecto no encontrado"),
-            @ApiResponse(responseCode = "409", description = "Código de historia duplicado")
+            @ApiResponse(responseCode = "409", description = "El código de historia ya está en uso")
     })
     @PostMapping("/projects/{projectId}/user-stories")
     @PreAuthorize("hasAuthority('backlog:write')")
@@ -68,9 +68,9 @@ public class UserStoryController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @Operation(summary = "Consultar una historia de usuario")
+    @Operation(summary = "Obtener una historia de usuario por su ID")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Historia obtenida"),
+            @ApiResponse(responseCode = "200", description = "Historia encontrada exitosamente"),
             @ApiResponse(responseCode = "404", description = "Historia no encontrada")
     })
     @GetMapping("/user-stories/{id}")
@@ -79,13 +79,14 @@ public class UserStoryController {
         return ResponseEntity.ok(userStoryService.findById(id));
     }
 
-    @Operation(summary = "Actualizar parcialmente una historia de usuario")
+    @Operation(summary = "Actualizar una historia de usuario existente")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Historia actualizada"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "404", description = "Historia no encontrada")
+            @ApiResponse(responseCode = "200", description = "Historia actualizada exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
+            @ApiResponse(responseCode = "404", description = "Historia no encontrada"),
+            @ApiResponse(responseCode = "409", description = "El código de historia ya está en uso")
     })
-    @PatchMapping("/user-stories/{id}")
+    @PutMapping("/user-stories/{id}")
     @PreAuthorize("hasAuthority('backlog:write')")
     public ResponseEntity<UserStoryResponse> update(
             @PathVariable UUID id,
@@ -95,9 +96,9 @@ public class UserStoryController {
         return ResponseEntity.ok(userStoryService.update(id, request, principal.getId()));
     }
 
-    @Operation(summary = "Eliminar lógicamente una historia sin tareas activas")
+    @Operation(summary = "Eliminar una historia de usuario (borrado lógico)")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Historia eliminada"),
+            @ApiResponse(responseCode = "204", description = "Historia eliminada exitosamente"),
             @ApiResponse(responseCode = "404", description = "Historia no encontrada"),
             @ApiResponse(responseCode = "409", description = "La historia conserva tareas activas")
     })

@@ -30,7 +30,7 @@ public class RoleServiceImpl implements RoleService {
     @Override
     @Transactional(readOnly = true)
     public List<RoleResponse> getAllActive() {
-        return roleRepository.findAllActive().stream()
+        return roleRepository.findByIsActiveTrue().stream()
                 .map(roleMapper::toResponse)
                 .toList();
     }

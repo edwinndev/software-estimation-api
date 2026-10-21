@@ -1,94 +1,90 @@
 package com.intecx.inscope.service.impl;
 
 import com.intecx.inscope.service.EmailService;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import jakarta.mail.internet.MimeMessage;
+import java.util.HashMap;
+import java.util.Map;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class EmailServiceImpl implements EmailService {
 
-    private final JavaMailSender mailSender;
-    private final String fromEmail;
+    private static final String LOGO_CONTENT_ID = "appLogo";
+    private static final String[] LOGO_CANDIDATES = {
+        "logo/intecx-dark-logo.png",
+        "logo/intecx-dark-logo.svg"
+    };
 
-    public EmailServiceImpl(
-            JavaMailSender mailSender,
-            @Value("${spring.mail.username}") String fromEmail
-    ) {
-        this.mailSender = mailSender;
-        this.fromEmail = fromEmail;
+    private final JavaMailSender mailSender;
+    private final Configuration freemarkerConfiguration;
+
+    @Value("${spring.mail.username}")
+    private String fromEmail;
+
+    @Override
+    public void sendOtpEmail(String toEmail, String otpCode, int expirationMinutes) {
+        Map<String, Object> model = new HashMap<>();
+        model.put("otpCode", otpCode);
+        model.put("expirationMinutes", expirationMinutes);
+        sendHtml(toEmail, "Código de verificación - Intecx InScope", "otp.ftlh", model);
     }
 
     @Override
-    public void sendOtpEmail(String toEmail, String otpCode) {
-        String subject = "Código de verificación para restablecer contraseña";
-        String content = """
-                Hola,
-
-                Has solicitado restablecer tu contraseña en la plataforma Software Estimation.
-
-                Tu código de verificación OTP es: %s
-
-                Este código es válido durante 10 minutos. Si no solicitaste este cambio, puedes ignorar este correo.
-
-                Saludos,
-                El equipo de Software (InScope)
-                """.formatted(otpCode);
-
-        sendSimpleMessage(toEmail, subject, content);
+    public void sendInvitationOtpEmail(String toEmail, String firstName, String otpCode, int expirationHours) {
+        Map<String, Object> model = new HashMap<>();
+        model.put("firstName", firstName);
+        model.put("otpCode", otpCode);
+        model.put("expirationHours", expirationHours);
+        sendHtml(toEmail, "Invitación a Intecx InScope", "invitation.ftlh", model);
     }
 
     @Override
     public void sendWelcomeEmail(String toEmail, String firstName) {
-        String subject = "Bienvenido a Software Estimation";
-        String content = """
-                Hola %s,
-
-                ¡Bienvenido a la plataforma Software Estimation!
-
-                Tu cuenta ha sido registrada exitosamente en nuestro sistema. Ya puedes iniciar sesión con tus credenciales.
-
-                Saludos,
-                El equipo de Software (InScope)
-                """.formatted(firstName);
-
-        sendSimpleMessage(toEmail, subject, content);
+        Map<String, Object> model = new HashMap<>();
+        model.put("firstName", firstName);
+        model.put("email", toEmail);
+        sendHtml(toEmail, "Bienvenido a Intecx InScope", "welcome.ftlh", model);
     }
 
-    @Override
-    public void sendInvitationOtpEmail(String toEmail, String firstName, String otpCode) {
-        String subject = "Invitación y código de activación - Software Estimation";
-        String content = """
-                Hola %s,
-
-                Has sido registrado en la plataforma Software Estimation.
-
-                Tu código de activación OTP para configurar tu contraseña es: %s
-
-                Este código es válido durante 24 horas. Para activar tu cuenta y configurar tu contraseña por primera vez, ingresa al sistema y utiliza la opción de verificación con tu correo y este código.
-
-                Saludos,
-                El equipo de Software (InScope)
-                """.formatted(firstName, otpCode);
-
-        sendSimpleMessage(toEmail, subject, content);
-    }
-
-    private void sendSimpleMessage(String to, String subject, String text) {
+    private void sendHtml(String to, String subject, String templateName, Map<String, Object> model) {
         try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(fromEmail);
-            message.setTo(to);
-            message.setSubject(subject);
-            message.setText(text);
+            Template template = freemarkerConfiguration.getTemplate(templateName);
+            String html = FreeMarkerTemplateUtils.processTemplateIntoString(template, model);
+
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom(fromEmail);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(html, true);
+            attachLogo(helper);
 
             mailSender.send(message);
-            log.info("Correo enviado exitosamente a '{}' con el asunto: '{}'", to, subject);
+            log.info("Correo enviado a '{}' con asunto '{}'", to, subject);
         } catch (Exception ex) {
-            log.error("No se pudo enviar el correo a '{}' (Asunto: '{}'). Causa: {}", to, subject, ex.getMessage());
+            log.error("No se pudo enviar el correo a '{}' (asunto '{}'): {}", to, subject, ex.getMessage());
         }
+    }
+
+    private void attachLogo(MimeMessageHelper helper) throws Exception {
+        for (String path : LOGO_CANDIDATES) {
+            ClassPathResource logo = new ClassPathResource(path);
+            if (logo.exists()) {
+                helper.addInline(LOGO_CONTENT_ID, logo);
+                return;
+            }
+        }
+        log.warn("No se encontró el logo de Intecx en el classpath; el correo se enviará sin imagen");
     }
 }

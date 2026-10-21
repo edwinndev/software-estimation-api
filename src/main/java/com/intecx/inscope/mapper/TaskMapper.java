@@ -38,27 +38,21 @@ public class TaskMapper {
     public Task toEntity(CreateTaskRequest request, UserStory story, int position, UUID actorId) {
         return Task.builder()
                 .story(story)
-                .title(request.title().trim())
-                .description(request.description().trim())
-                .estimateHours(request.estimateHours())
-                .status(request.status() == null ? TaskStatus.TODO : request.status())
+                .title(request.getTitle().trim())
+                .description(request.getDescription().trim())
+                .estimateHours(request.getEstimateHours())
+                .status(request.getStatus() == null ? TaskStatus.TODO : request.getStatus())
                 .position(position)
                 .createdBy(actorId)
                 .build();
     }
 
     public void updateEntity(Task task, UpdateTaskRequest request, UUID actorId) {
-        if (request.title() != null) {
-            task.setTitle(request.title().trim());
-        }
-        if (request.description() != null) {
-            task.setDescription(request.description().trim());
-        }
-        if (request.estimateHours() != null) {
-            task.setEstimateHours(request.estimateHours());
-        }
-        if (request.status() != null) {
-            task.setStatus(request.status());
+        task.setTitle(request.getTitle().trim());
+        task.setDescription(request.getDescription().trim());
+        task.setEstimateHours(request.getEstimateHours());
+        if (request.getStatus() != null) {
+            task.setStatus(request.getStatus());
         }
         task.setUpdatedBy(actorId);
     }

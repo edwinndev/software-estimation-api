@@ -58,7 +58,7 @@ public class TechnicalProfileServiceImpl implements TechnicalProfileService {
     @Override
     @Transactional(readOnly = true)
     public TechnicalProfileResponse getById(UUID id) {
-        TechnicalProfile profile = technicalProfileRepository.findActiveById(id)
+        TechnicalProfile profile = technicalProfileRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Perfil técnico no encontrado"));
         return technicalProfileMapper.toResponse(profile);
     }
@@ -66,8 +66,8 @@ public class TechnicalProfileServiceImpl implements TechnicalProfileService {
     @Override
     @Transactional
     public TechnicalProfileResponse create(CreateTechnicalProfileRequest request, UUID actorId) {
-        String email = request.email().trim().toLowerCase();
-        if (technicalProfileRepository.existsActiveByEmail(email)) {
+        String email = request.getEmail().trim().toLowerCase();
+        if (technicalProfileRepository.existsByEmailIgnoreCaseAndDeletedAtIsNull(email)) {
             throw new ConflictException("Ya existe un perfil técnico registrado con el correo electrónico proporcionado");
         }
 
@@ -80,25 +80,25 @@ public class TechnicalProfileServiceImpl implements TechnicalProfileService {
     @Override
     @Transactional
     public TechnicalProfileResponse update(UUID id, UpdateTechnicalProfileRequest request, UUID actorId) {
-        TechnicalProfile profile = technicalProfileRepository.findActiveById(id)
+        TechnicalProfile profile = technicalProfileRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Perfil técnico no encontrado"));
 
-        String newEmail = request.email().trim().toLowerCase();
+        String newEmail = request.getEmail().trim().toLowerCase();
         if (!profile.getEmail().equalsIgnoreCase(newEmail)
-                && technicalProfileRepository.existsActiveByEmailAndIdNot(newEmail, id)) {
+                && technicalProfileRepository.existsByEmailIgnoreCaseAndDeletedAtIsNullAndIdNot(newEmail, id)) {
             throw new ConflictException("Ya existe un perfil técnico registrado con el correo electrónico proporcionado");
         }
 
-        profile.setName(request.name().trim());
+        profile.setName(request.getName().trim());
         profile.setEmail(newEmail);
-        profile.setRole(request.role());
-        profile.setExperienceLevel(request.experienceLevel());
-        profile.setHourlyRate(request.hourlyRate());
-        if (request.currency() != null && !request.currency().isBlank()) {
-            profile.setCurrency(request.currency().trim().toUpperCase());
+        profile.setRole(request.getRole());
+        profile.setExperienceLevel(request.getExperienceLevel());
+        profile.setHourlyRate(request.getHourlyRate());
+        if (request.getCurrency() != null && !request.getCurrency().isBlank()) {
+            profile.setCurrency(request.getCurrency().trim().toUpperCase());
         }
-        if (request.isActive() != null) {
-            profile.setActive(request.isActive());
+        if (request.getIsActive() != null) {
+            profile.setActive(request.getIsActive());
         }
         profile.setUpdatedBy(actorId);
 
@@ -109,12 +109,12 @@ public class TechnicalProfileServiceImpl implements TechnicalProfileService {
     @Override
     @Transactional
     public TechnicalProfileResponse updateCer(UUID id, UpdateCerRequest request, UUID actorId) {
-        TechnicalProfile profile = technicalProfileRepository.findActiveById(id)
+        TechnicalProfile profile = technicalProfileRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Perfil técnico no encontrado"));
 
-        profile.setHourlyRate(request.hourlyRate());
-        if (request.currency() != null && !request.currency().isBlank()) {
-            profile.setCurrency(request.currency().trim().toUpperCase());
+        profile.setHourlyRate(request.getHourlyRate());
+        if (request.getCurrency() != null && !request.getCurrency().isBlank()) {
+            profile.setCurrency(request.getCurrency().trim().toUpperCase());
         }
         profile.setUpdatedBy(actorId);
 
@@ -125,10 +125,10 @@ public class TechnicalProfileServiceImpl implements TechnicalProfileService {
     @Override
     @Transactional
     public TechnicalProfileResponse changeStatus(UUID id, ToggleProfileStatusRequest request, UUID actorId) {
-        TechnicalProfile profile = technicalProfileRepository.findActiveById(id)
+        TechnicalProfile profile = technicalProfileRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Perfil técnico no encontrado"));
 
-        profile.setActive(request.isActive());
+        profile.setActive(request.getIsActive());
         profile.setUpdatedBy(actorId);
 
         TechnicalProfile updatedProfile = technicalProfileRepository.save(profile);
@@ -138,7 +138,7 @@ public class TechnicalProfileServiceImpl implements TechnicalProfileService {
     @Override
     @Transactional
     public void delete(UUID id, UUID actorId) {
-        TechnicalProfile profile = technicalProfileRepository.findActiveById(id)
+        TechnicalProfile profile = technicalProfileRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Perfil técnico no encontrado"));
 
         profile.setDeletedAt(LocalDateTime.now());

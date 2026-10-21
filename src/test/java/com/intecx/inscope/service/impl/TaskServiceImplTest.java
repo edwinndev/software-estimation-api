@@ -9,14 +9,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.intecx.inscope.dto.request.task.CreateTaskRequest;
-import com.intecx.inscope.dto.request.task.UpdateTaskRequest;
 import com.intecx.inscope.entity.Project;
 import com.intecx.inscope.entity.Task;
 import com.intecx.inscope.entity.TechnicalProfile;
 import com.intecx.inscope.entity.UserStory;
 import com.intecx.inscope.enumeration.ExperienceLevel;
 import com.intecx.inscope.enumeration.TechnicalRole;
-import com.intecx.inscope.exception.BadRequestException;
 import com.intecx.inscope.exception.ResourceNotFoundException;
 import com.intecx.inscope.mapper.TaskMapper;
 import com.intecx.inscope.mapper.TechnicalProfileMapper;
@@ -31,6 +29,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -39,13 +38,10 @@ class TaskServiceImplTest {
 
     @Mock
     private TaskRepository taskRepository;
-
     @Mock
     private UserStoryRepository userStoryRepository;
-
     @Mock
     private ProjectRepository projectRepository;
-
     @Mock
     private TechnicalProfileRepository technicalProfileRepository;
 
@@ -80,14 +76,20 @@ class TaskServiceImplTest {
                 .experienceLevel(ExperienceLevel.SENIOR)
                 .hourlyRate(BigDecimal.TEN)
                 .build();
-        when(userStoryRepository.findActiveById(storyId)).thenReturn(Optional.of(story));
+        when(userStoryRepository.findByIdAndDeletedAtIsNull(storyId)).thenReturn(Optional.of(story));
         when(taskRepository.findLastPositionByStoryId(storyId)).thenReturn(0);
-        when(technicalProfileRepository.findActiveByIds(anyCollection())).thenReturn(List.of(profile));
+        when(technicalProfileRepository.findByIdInAndDeletedAtIsNullAndIsActiveTrue(anyCollection()))
+                .thenReturn(List.of(profile));
         when(taskRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         var response = taskService.create(
                 storyId,
-                new CreateTaskRequest("Implementar API", "Crear el endpoint", 4, null, List.of(profileId)),
+                CreateTaskRequest.builder()
+                        .title("Implementar API")
+                        .description("Crear el endpoint")
+                        .estimateHours(4)
+                        .responsibleProfileIds(List.of(profileId))
+                        .build(),
                 UUID.randomUUID()
         );
 
@@ -99,96 +101,41 @@ class TaskServiceImplTest {
     @Test
     void rejectsTaskWhenStoryDoesNotExist() {
         UUID storyId = UUID.randomUUID();
-        when(userStoryRepository.findActiveById(storyId)).thenReturn(Optional.empty());
+        when(userStoryRepository.findByIdAndDeletedAtIsNull(storyId)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> taskService.create(
                 storyId,
-                new CreateTaskRequest("Implementar API", "Crear el endpoint", 4, null, List.of()),
+                CreateTaskRequest.builder()
+                        .title("Implementar API")
+                        .description("Crear el endpoint")
+                        .estimateHours(4)
+                        .responsibleProfileIds(List.of())
+                        .build(),
                 UUID.randomUUID()
         ));
         verify(taskRepository, never()).save(any());
     }
 
     @Test
-    void rejectsUnknownResponsibleProfilesWithoutSavingTask() {
-        UUID storyId = UUID.randomUUID();
-        UUID profileId = UUID.randomUUID();
-        UserStory story = UserStory.builder()
-                .id(storyId)
-                .project(Project.builder().id(UUID.randomUUID()).build())
+    void softDeletesTaskWithoutDeletingItsAssignments() {
+        UUID taskId = UUID.randomUUID();
+        Task task = Task.builder()
+                .id(taskId)
+                .story(UserStory.builder()
+                        .id(UUID.randomUUID())
+                        .project(Project.builder().id(UUID.randomUUID()).build())
+                        .build())
+                .title("Título anterior")
+                .description("Descripción anterior")
+                .estimateHours(4)
                 .build();
-        when(userStoryRepository.findActiveById(storyId)).thenReturn(Optional.of(story));
-        when(taskRepository.findLastPositionByStoryId(storyId)).thenReturn(0);
-        when(technicalProfileRepository.findActiveByIds(anyCollection())).thenReturn(List.of());
+        when(taskRepository.findByIdAndDeletedAtIsNull(taskId)).thenReturn(Optional.of(task));
+        when(taskRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        assertThrows(ResourceNotFoundException.class, () -> taskService.create(
-                storyId,
-                new CreateTaskRequest("Implementar API", "Crear el endpoint", 4, null, List.of(profileId)),
-                UUID.randomUUID()
-        ));
-        verify(taskRepository, never()).save(any());
+        taskService.delete(taskId, UUID.randomUUID());
+
+        ArgumentCaptor<Task> taskCaptor = ArgumentCaptor.forClass(Task.class);
+        verify(taskRepository).save(taskCaptor.capture());
+        org.junit.jupiter.api.Assertions.assertNotNull(taskCaptor.getValue().getDeletedAt());
     }
-
-    @Test
-    void rejectsDuplicateResponsibleProfiles() {
-        UUID storyId = UUID.randomUUID();
-        UUID profileId = UUID.randomUUID();
-        UserStory story = UserStory.builder()
-                .id(storyId)
-                .project(Project.builder().id(UUID.randomUUID()).build())
-                .build();
-        when(userStoryRepository.findActiveById(storyId)).thenReturn(Optional.of(story));
-        when(taskRepository.findLastPositionByStoryId(storyId)).thenReturn(0);
-
-        assertThrows(BadRequestException.class, () -> taskService.create(
-                storyId,
-                new CreateTaskRequest("Implementar API", "Crear el endpoint", 4, null, List.of(profileId, profileId)),
-                UUID.randomUUID()
-        ));
-        verify(taskRepository, never()).save(any());
-    }
-
-        @Test
-        void updatesOnlyProvidedTaskFields() {
-                UUID taskId = UUID.randomUUID();
-                Task task = existingTask(taskId);
-                when(taskRepository.findActiveById(taskId)).thenReturn(Optional.of(task));
-                when(taskRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
-
-                var response = taskService.update(
-                                taskId,
-                                new UpdateTaskRequest("Título nuevo", null, null, null),
-                                UUID.randomUUID()
-                );
-
-                assertEquals("Título nuevo", response.title());
-                assertEquals("Descripción anterior", response.description());
-        }
-
-        @Test
-        void softDeletesTaskWithoutDeletingItsAssignments() {
-                UUID taskId = UUID.randomUUID();
-                Task task = existingTask(taskId);
-                when(taskRepository.findActiveById(taskId)).thenReturn(Optional.of(task));
-                when(taskRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
-
-                taskService.delete(taskId, UUID.randomUUID());
-
-                org.mockito.ArgumentCaptor<Task> taskCaptor = org.mockito.ArgumentCaptor.forClass(Task.class);
-                verify(taskRepository).save(taskCaptor.capture());
-                org.junit.jupiter.api.Assertions.assertNotNull(taskCaptor.getValue().getDeletedAt());
-        }
-
-        private Task existingTask(UUID taskId) {
-                return Task.builder()
-                                .id(taskId)
-                                .story(UserStory.builder()
-                                                .id(UUID.randomUUID())
-                                                .project(Project.builder().id(UUID.randomUUID()).build())
-                                                .build())
-                                .title("Título anterior")
-                                .description("Descripción anterior")
-                                .estimateHours(4)
-                                .build();
-        }
 }

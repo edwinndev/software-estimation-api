@@ -1,29 +1,37 @@
 package com.intecx.inscope.dto.request.userstory;
 
 import com.intecx.inscope.enumeration.StoryPriority;
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
-public record CreateUserStoryRequest(
-        @NotBlank(message = "El código de la historia es obligatorio")
-        @Size(max = 10, message = "El código no puede superar los 10 caracteres")
-        @Schema(example = "US-101")
-        String code,
+@Getter
+@Setter
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
+public class CreateUserStoryRequest {
 
-        @NotBlank(message = "El título de la historia es obligatorio")
-        @Size(max = 150, message = "El título no puede superar los 150 caracteres")
-        String title,
+    @NotBlank(message = "El código de la historia es obligatorio")
+    @Size(max = 10, message = "El código no puede superar los 10 caracteres")
+    private String code;
 
-        @NotBlank(message = "La descripción de la historia es obligatoria")
-        String description,
+    @NotBlank(message = "El título de la historia es obligatorio")
+    @Size(max = 150, message = "El título no puede superar los 150 caracteres")
+    private String title;
 
-        String acceptanceCriteria,
+    @NotBlank(message = "La descripción de la historia es obligatoria")
+    private String description;
 
-        StoryPriority priority,
+    private String acceptanceCriteria;
 
-        @PositiveOrZero(message = "Los puntos de historia no pueden ser negativos")
-        Short storyPoints
-) {
+    private StoryPriority priority;
+
+    @PositiveOrZero(message = "Los puntos de historia no pueden ser negativos")
+    private Short storyPoints;
 }

@@ -8,7 +8,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.intecx.inscope.dto.request.userstory.CreateUserStoryRequest;
-import com.intecx.inscope.dto.request.userstory.UpdateUserStoryRequest;
 import com.intecx.inscope.entity.Project;
 import com.intecx.inscope.entity.UserStory;
 import com.intecx.inscope.exception.ConflictException;
@@ -53,14 +52,18 @@ class UserStoryServiceImplTest {
     void createsStoryForActiveProject() {
         UUID projectId = UUID.randomUUID();
         Project project = Project.builder().id(projectId).build();
-        when(projectRepository.findActiveById(projectId)).thenReturn(Optional.of(project));
+        when(projectRepository.findByIdAndDeletedAtIsNull(projectId)).thenReturn(Optional.of(project));
         when(userStoryRepository.existsByProject_IdAndCode(projectId, "US-1")).thenReturn(false);
         when(userStoryRepository.findLastPositionByProjectId(projectId)).thenReturn(2);
         when(userStoryRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         var response = userStoryService.create(
                 projectId,
-                new CreateUserStoryRequest("US-1", "Acceso", "Permitir acceso", null, null, null),
+                CreateUserStoryRequest.builder()
+                        .code("US-1")
+                        .title("Acceso")
+                        .description("Permitir acceso")
+                        .build(),
                 UUID.randomUUID()
         );
 
@@ -72,11 +75,15 @@ class UserStoryServiceImplTest {
     @Test
     void rejectsStoryForMissingProject() {
         UUID projectId = UUID.randomUUID();
-        when(projectRepository.findActiveById(projectId)).thenReturn(Optional.empty());
+        when(projectRepository.findByIdAndDeletedAtIsNull(projectId)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> userStoryService.create(
                 projectId,
-                new CreateUserStoryRequest("US-1", "Acceso", "Permitir acceso", null, null, null),
+                CreateUserStoryRequest.builder()
+                        .code("US-1")
+                        .title("Acceso")
+                        .description("Permitir acceso")
+                        .build(),
                 UUID.randomUUID()
         ));
         verify(userStoryRepository, never()).save(any());
@@ -85,35 +92,11 @@ class UserStoryServiceImplTest {
     @Test
     void rejectsDeletingStoryWithActiveTasks() {
         UUID storyId = UUID.randomUUID();
-        when(userStoryRepository.findActiveById(storyId))
-                .thenReturn(Optional.of(com.intecx.inscope.entity.UserStory.builder().id(storyId).build()));
-        when(taskRepository.existsActiveByStoryId(storyId)).thenReturn(true);
+        when(userStoryRepository.findByIdAndDeletedAtIsNull(storyId))
+                .thenReturn(Optional.of(UserStory.builder().id(storyId).build()));
+        when(taskRepository.existsByStory_IdAndDeletedAtIsNull(storyId)).thenReturn(true);
 
         assertThrows(ConflictException.class, () -> userStoryService.delete(storyId, UUID.randomUUID()));
         verify(userStoryRepository, never()).save(any());
-    }
-
-    @Test
-    void updatesOnlyProvidedStoryFields() {
-        UUID storyId = UUID.randomUUID();
-        UUID projectId = UUID.randomUUID();
-        UserStory story = UserStory.builder()
-                .id(storyId)
-                .project(Project.builder().id(projectId).build())
-                .title("Título anterior")
-                .description("Descripción anterior")
-                .acceptanceCriteria("")
-                .build();
-        when(userStoryRepository.findActiveById(storyId)).thenReturn(Optional.of(story));
-        when(userStoryRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
-
-        var response = userStoryService.update(
-                storyId,
-                new UpdateUserStoryRequest("Título nuevo", null, null, null, null, null),
-                UUID.randomUUID()
-        );
-
-        assertEquals("Título nuevo", response.title());
-        assertEquals("Descripción anterior", response.description());
     }
 }
