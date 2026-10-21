@@ -10,6 +10,7 @@ import com.intecx.inscope.common.PageMeta;
 import com.intecx.inscope.common.PaginatedResponse;
 import com.intecx.inscope.common.QueryRequest;
 import com.intecx.inscope.dto.request.profile.CreateTechnicalProfileRequest;
+import com.intecx.inscope.dto.request.profile.ToggleProfileStatusRequest;
 import com.intecx.inscope.dto.request.profile.UpdateCerRequest;
 import com.intecx.inscope.dto.request.profile.UpdateTechnicalProfileRequest;
 import com.intecx.inscope.dto.response.TechnicalProfileResponse;
@@ -205,5 +206,50 @@ class TechnicalProfileControllerTest {
         assertEquals(1, response.getBody().getItems().size());
         assertEquals(new BigDecimal("140.00"), response.getBody().getItems().getFirst().hourlyRate());
         verify(technicalProfileService).search(query);
+    }
+
+    @Test
+    void changeStatusShouldReturnOkStatusAndUpdatedProfile() {
+        UUID actorId = UUID.randomUUID();
+        UUID profileId = UUID.randomUUID();
+        UserPrincipal principal = mock(UserPrincipal.class);
+        when(principal.getId()).thenReturn(actorId);
+
+        ToggleProfileStatusRequest request = ToggleProfileStatusRequest.builder()
+                .isActive(false)
+                .build();
+
+        TechnicalProfileResponse mockResponse = TechnicalProfileResponse.builder()
+                .id(profileId)
+                .name("Pedro Dev")
+                .email("pedro@example.com")
+                .role(TechnicalRole.BACKEND)
+                .experienceLevel(ExperienceLevel.SENIOR)
+                .hourlyRate(new BigDecimal("85.00"))
+                .currency("PEN")
+                .isActive(false)
+                .build();
+
+        when(technicalProfileService.changeStatus(profileId, request, actorId)).thenReturn(mockResponse);
+
+        ResponseEntity<TechnicalProfileResponse> response = controller.changeStatus(profileId, request, principal);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(false, response.getBody().isActive());
+        verify(technicalProfileService).changeStatus(profileId, request, actorId);
+    }
+
+    @Test
+    void deleteShouldReturnNoContentStatus() {
+        UUID actorId = UUID.randomUUID();
+        UUID profileId = UUID.randomUUID();
+        UserPrincipal principal = mock(UserPrincipal.class);
+        when(principal.getId()).thenReturn(actorId);
+
+        ResponseEntity<Void> response = controller.delete(profileId, principal);
+
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+        verify(technicalProfileService).delete(profileId, actorId);
     }
 }

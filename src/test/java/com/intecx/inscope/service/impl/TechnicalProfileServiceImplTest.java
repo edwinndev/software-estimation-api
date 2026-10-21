@@ -1,6 +1,7 @@
 package com.intecx.inscope.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -11,6 +12,7 @@ import static org.mockito.Mockito.when;
 import com.intecx.inscope.common.PaginatedResponse;
 import com.intecx.inscope.common.QueryRequest;
 import com.intecx.inscope.dto.request.profile.CreateTechnicalProfileRequest;
+import com.intecx.inscope.dto.request.profile.ToggleProfileStatusRequest;
 import com.intecx.inscope.dto.request.profile.UpdateCerRequest;
 import com.intecx.inscope.dto.request.profile.UpdateTechnicalProfileRequest;
 import com.intecx.inscope.dto.response.TechnicalProfileResponse;
@@ -298,5 +300,83 @@ class TechnicalProfileServiceImplTest {
                 () -> technicalProfileService.update(profileId, request, actorId)
         );
         assertEquals("Ya existe un perfil técnico registrado con el correo electrónico proporcionado", ex.getMessage());
+    }
+
+    @Test
+    void changeStatusShouldToggleActiveAndSetUpdatedBy() {
+        UUID actorId = UUID.randomUUID();
+        UUID profileId = UUID.randomUUID();
+        TechnicalProfile existing = TechnicalProfile.builder()
+                .id(profileId)
+                .name("Status Test")
+                .email("status@example.com")
+                .role(TechnicalRole.QA)
+                .experienceLevel(ExperienceLevel.MID)
+                .hourlyRate(new BigDecimal("60.00"))
+                .currency("PEN")
+                .isActive(true)
+                .build();
+
+        ToggleProfileStatusRequest request = ToggleProfileStatusRequest.builder()
+                .isActive(false)
+                .build();
+
+        when(technicalProfileRepository.findByIdAndDeletedAtIsNull(profileId)).thenReturn(Optional.of(existing));
+        when(technicalProfileRepository.save(any(TechnicalProfile.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        TechnicalProfileResponse response = technicalProfileService.changeStatus(profileId, request, actorId);
+
+        assertNotNull(response);
+        assertFalse(response.isActive());
+        assertFalse(existing.isActive());
+        assertEquals(actorId, existing.getUpdatedBy());
+        verify(technicalProfileRepository).save(existing);
+    }
+
+    @Test
+    void changeStatusShouldThrowResourceNotFoundExceptionWhenNotFound() {
+        UUID actorId = UUID.randomUUID();
+        UUID profileId = UUID.randomUUID();
+        ToggleProfileStatusRequest request = ToggleProfileStatusRequest.builder()
+                .isActive(false)
+                .build();
+
+        when(technicalProfileRepository.findByIdAndDeletedAtIsNull(profileId)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> technicalProfileService.changeStatus(profileId, request, actorId));
+    }
+
+    @Test
+    void deleteShouldPerformSoftDeleteAndDeactivateProfile() {
+        UUID actorId = UUID.randomUUID();
+        UUID profileId = UUID.randomUUID();
+        TechnicalProfile existing = TechnicalProfile.builder()
+                .id(profileId)
+                .name("To Delete")
+                .email("delete@example.com")
+                .role(TechnicalRole.FRONTEND)
+                .experienceLevel(ExperienceLevel.JUNIOR)
+                .hourlyRate(new BigDecimal("45.00"))
+                .currency("PEN")
+                .isActive(true)
+                .build();
+
+        when(technicalProfileRepository.findByIdAndDeletedAtIsNull(profileId)).thenReturn(Optional.of(existing));
+
+        technicalProfileService.delete(profileId, actorId);
+
+        assertNotNull(existing.getDeletedAt());
+        assertEquals(actorId, existing.getDeletedBy());
+        assertFalse(existing.isActive());
+        verify(technicalProfileRepository).save(existing);
+    }
+
+    @Test
+    void deleteShouldThrowResourceNotFoundExceptionWhenNotFound() {
+        UUID actorId = UUID.randomUUID();
+        UUID profileId = UUID.randomUUID();
+        when(technicalProfileRepository.findByIdAndDeletedAtIsNull(profileId)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> technicalProfileService.delete(profileId, actorId));
     }
 }
