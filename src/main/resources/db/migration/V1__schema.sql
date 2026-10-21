@@ -14,7 +14,20 @@ CREATE TYPE in_scope.story_priority AS ENUM ('LOW', 'MEDIUM', 'HIGH');
 CREATE TYPE in_scope.story_status AS ENUM ('DRAFT', 'READY', 'IN_PROGRESS', 'DONE');
 CREATE TYPE in_scope.task_status AS ENUM ('TODO', 'IN_PROGRESS', 'DONE');
 CREATE TYPE in_scope.sprint_unit AS ENUM ('DAYS', 'WEEKS');
-CREATE TYPE in_scope.risk_level AS ENUM ('LOW', 'MEDIUM', 'HIGH');
+CREATE TYPE in_scope.risk_level AS ENUM ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL');
+
+-- archivos en Bunny (metadata; avatars, reportes PDF, etc.)
+CREATE TABLE in_scope.file_attachments
+(
+    id           UUID PRIMARY KEY      DEFAULT gen_random_uuid(),
+    type         VARCHAR(30)  NOT NULL,
+    file_name    VARCHAR(255) NOT NULL,
+    content_type VARCHAR(100) NOT NULL,
+    size_bytes   BIGINT       NOT NULL,
+    storage_path VARCHAR(500) NOT NULL UNIQUE,
+    created_at   TIMESTAMP  NOT NULL DEFAULT now(),
+    created_by   UUID         NULL
+);
 
 -- seguridad
 CREATE TABLE in_scope.permissions
@@ -54,6 +67,7 @@ CREATE TABLE in_scope.users
     last_name     VARCHAR(100) NOT NULL,
     email         VARCHAR(255) NOT NULL UNIQUE,
     password_hash TEXT         NOT NULL,
+    avatar_id     UUID         NULL,
     is_active     BOOLEAN      NOT NULL DEFAULT FALSE,
     created_at    TIMESTAMP  NOT NULL DEFAULT now(),
     updated_at    TIMESTAMP  NULL,
@@ -61,7 +75,8 @@ CREATE TABLE in_scope.users
     created_by    UUID         NULL,
     updated_by    UUID         NULL,
     deleted_by    UUID         NULL,
-    CONSTRAINT fk_users_role FOREIGN KEY (role_id) REFERENCES in_scope.roles (id)
+    CONSTRAINT fk_users_role FOREIGN KEY (role_id) REFERENCES in_scope.roles (id),
+    CONSTRAINT fk_users_avatar FOREIGN KEY (avatar_id) REFERENCES in_scope.file_attachments (id) ON DELETE SET NULL
 );
 
 CREATE TABLE in_scope.password_reset_tokens
@@ -133,23 +148,24 @@ CREATE INDEX project_status_history_project_idx ON in_scope.project_status_histo
 -- backlog (historias de usuario y tareas)
 CREATE TABLE in_scope.user_stories
 (
-    id           UUID PRIMARY KEY                   DEFAULT gen_random_uuid(),
-    project_id   UUID                      NOT NULL,
-    code         VARCHAR(10)               NOT NULL,
-    title        VARCHAR(150)              NOT NULL,
-    description  TEXT                      NOT NULL,
-    priority     in_scope.story_priority NOT NULL DEFAULT 'MEDIUM',
-    status       in_scope.story_status   NOT NULL DEFAULT 'DRAFT',
-    story_points SMALLINT                  NULL,
-    position     INTEGER                   NOT NULL,
-    created_at   TIMESTAMP               NOT NULL DEFAULT now(),
-    updated_at   TIMESTAMP               NULL,
-    deleted_at   TIMESTAMP               NULL,
-    created_by   UUID                      NULL,
-    updated_by   UUID                      NULL,
-    deleted_by   UUID                      NULL,
+    id                  UUID PRIMARY KEY                   DEFAULT gen_random_uuid(),
+    project_id          UUID                      NOT NULL,
+    code                VARCHAR(10)               NOT NULL,
+    title               VARCHAR(150)              NOT NULL,
+    description         TEXT                      NOT NULL,
+    acceptance_criteria TEXT                      NOT NULL DEFAULT '',
+    priority            in_scope.story_priority NOT NULL DEFAULT 'MEDIUM',
+    status              in_scope.story_status   NOT NULL DEFAULT 'DRAFT',
+    story_points        SMALLINT                  NULL,
+    position            INTEGER                   NOT NULL,
+    created_at          TIMESTAMP               NOT NULL DEFAULT now(),
+    updated_at          TIMESTAMP               NULL,
+    deleted_at          TIMESTAMP               NULL,
+    created_by          UUID                      NULL,
+    updated_by          UUID                      NULL,
+    deleted_by          UUID                      NULL,
     UNIQUE (project_id, code),
-    CONSTRAINT fk_user_stories_project FOREIGN KEY (project_id) REFERENCES in_scope.projects (id) ON DELETE CASCADE
+    CONSTRAINT fk_user_stories_project FOREIGN KEY (project_id) REFERENCES in_scope.projects (id) ON DELETE RESTRICT
 );
 
 CREATE TABLE in_scope.tasks
@@ -167,7 +183,7 @@ CREATE TABLE in_scope.tasks
     created_by     UUID                    NULL,
     updated_by     UUID                    NULL,
     deleted_by     UUID                    NULL,
-    CONSTRAINT fk_tasks_story FOREIGN KEY (story_id) REFERENCES in_scope.user_stories (id) ON DELETE CASCADE
+    CONSTRAINT fk_tasks_story FOREIGN KEY (story_id) REFERENCES in_scope.user_stories (id) ON DELETE RESTRICT
 );
 
 CREATE INDEX tasks_story_position_idx ON in_scope.tasks (story_id, position);
@@ -241,24 +257,11 @@ CREATE TABLE in_scope.report_snapshots
     contingency_cost              NUMERIC(14, 2)            NOT NULL,
     total_time                    NUMERIC(10, 2)            NOT NULL,
     total_cost                    NUMERIC(14, 2)            NOT NULL,
+    file_id                       UUID                      NULL,
     created_at                    TIMESTAMP               NOT NULL DEFAULT now(),
     created_by                    UUID                      NULL,
-    CONSTRAINT fk_report_snapshots_project FOREIGN KEY (project_id) REFERENCES in_scope.projects (id) ON DELETE CASCADE
+    CONSTRAINT fk_report_snapshots_project FOREIGN KEY (project_id) REFERENCES in_scope.projects (id) ON DELETE CASCADE,
+    CONSTRAINT fk_report_snapshots_file FOREIGN KEY (file_id) REFERENCES in_scope.file_attachments (id) ON DELETE SET NULL
 );
 
 CREATE INDEX report_snapshots_project_idx ON in_scope.report_snapshots (project_id, created_at DESC);
-
--- archivos PDF de reportes guardados en Bunny (solo se registra la ruta, no el binario)
-CREATE TABLE in_scope.report_files
-(
-    id           UUID PRIMARY KEY      DEFAULT gen_random_uuid(),
-    report_id    UUID         NULL,
-    type         VARCHAR(30)  NOT NULL,
-    file_name    VARCHAR(255) NOT NULL,
-    content_type VARCHAR(100) NOT NULL,
-    size_bytes   BIGINT       NOT NULL,
-    storage_path VARCHAR(500) NOT NULL UNIQUE,
-    created_at   TIMESTAMP  NOT NULL DEFAULT now(),
-    created_by   UUID         NULL,
-    CONSTRAINT fk_report_files_report FOREIGN KEY (report_id) REFERENCES in_scope.report_snapshots (id) ON DELETE CASCADE
-);

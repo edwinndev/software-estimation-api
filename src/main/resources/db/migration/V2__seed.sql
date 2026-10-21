@@ -5,10 +5,16 @@ INSERT INTO in_scope.permissions (code, label, group_code, group_label) VALUES
     ('user:delete', 'Eliminar usuarios', 'security', 'Seguridad'),
     ('profile:read', 'Ver perfiles técnicos', 'profiles', 'Perfiles técnicos'),
     ('profile:write', 'Crear y editar perfiles técnicos', 'profiles', 'Perfiles técnicos'),
+    ('profile:delete', 'Eliminar perfiles técnicos', 'profiles', 'Perfiles técnicos'),
     ('project:read', 'Ver proyectos', 'projects', 'Proyectos'),
     ('project:write', 'Crear y editar proyectos', 'projects', 'Proyectos'),
+    ('project:delete', 'Eliminar proyectos', 'projects', 'Proyectos'),
+    ('backlog:read', 'Ver historias y tareas', 'backlog', 'Historias y tareas'),
+    ('backlog:write', 'Crear y actualizar historias y tareas', 'backlog', 'Historias y tareas'),
+    ('backlog:delete', 'Eliminar historias y tareas', 'backlog', 'Historias y tareas'),
     ('estimation:read', 'Ver estimación', 'estimation', 'Estimación'),
     ('estimation:write', 'Editar estimación', 'estimation', 'Estimación'),
+    ('estimation:delete', 'Eliminar estimaciones', 'estimation', 'Estimación'),
     ('cost:read', 'Ver costos', 'costs', 'Costos'),
     ('cost:write', 'Editar costos', 'costs', 'Costos'),
     ('risk:read', 'Ver riesgos', 'risks', 'Riesgos'),
@@ -32,9 +38,10 @@ INSERT INTO in_scope.role_permissions (role_id, permission_id)
 SELECT r.id, p.id
 FROM in_scope.roles r
 JOIN in_scope.permissions p ON p.code IN (
-    'profile:read', 'profile:write',
-    'project:read', 'project:write',
-    'estimation:read', 'estimation:write',
+    'profile:read', 'profile:write', 'profile:delete',
+    'project:read', 'project:write', 'project:delete',
+    'backlog:read', 'backlog:write',
+    'estimation:read', 'estimation:write', 'estimation:delete',
     'cost:read', 'cost:write',
     'risk:read', 'risk:write',
     'report:read', 'history:read'
@@ -45,7 +52,7 @@ INSERT INTO in_scope.role_permissions (role_id, permission_id)
 SELECT r.id, p.id
 FROM in_scope.roles r
 JOIN in_scope.permissions p ON p.code IN (
-    'project:read', 'estimation:read', 'cost:read',
+    'project:read', 'backlog:read', 'estimation:read', 'cost:read',
     'risk:read', 'report:read', 'history:read'
 )
 WHERE r.code = 'viewer';

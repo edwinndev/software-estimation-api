@@ -1,4 +1,4 @@
-package com.intecx.estimation.enumeration;
+package com.intecx.inscope.enumeration;
 
 public enum RiskLevel {
     LOW,
