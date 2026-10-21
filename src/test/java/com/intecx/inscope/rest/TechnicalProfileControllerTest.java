@@ -6,6 +6,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.intecx.inscope.common.PageMeta;
+import com.intecx.inscope.common.PaginatedResponse;
+import com.intecx.inscope.common.QueryRequest;
 import com.intecx.inscope.dto.request.profile.CreateTechnicalProfileRequest;
 import com.intecx.inscope.dto.request.profile.UpdateCerRequest;
 import com.intecx.inscope.dto.request.profile.UpdateTechnicalProfileRequest;
@@ -15,6 +18,7 @@ import com.intecx.inscope.enumeration.TechnicalRole;
 import com.intecx.inscope.security.UserPrincipal;
 import com.intecx.inscope.service.TechnicalProfileService;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -146,5 +150,60 @@ class TechnicalProfileControllerTest {
         assertEquals(TechnicalRole.FULLSTACK, response.getBody().role());
         assertEquals(new BigDecimal("130.00"), response.getBody().hourlyRate());
         verify(technicalProfileService).update(profileId, request, actorId);
+    }
+
+    @Test
+    void getByIdShouldReturnOkStatusAndProfile() {
+        UUID profileId = UUID.randomUUID();
+        TechnicalProfileResponse mockResponse = TechnicalProfileResponse.builder()
+                .id(profileId)
+                .name("Maria QA")
+                .email("maria@example.com")
+                .role(TechnicalRole.QA)
+                .experienceLevel(ExperienceLevel.MID)
+                .hourlyRate(new BigDecimal("70.00"))
+                .currency("PEN")
+                .isActive(true)
+                .build();
+
+        when(technicalProfileService.getById(profileId)).thenReturn(mockResponse);
+
+        ResponseEntity<TechnicalProfileResponse> response = controller.getById(profileId);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(profileId, response.getBody().id());
+        assertEquals(new BigDecimal("70.00"), response.getBody().hourlyRate());
+        verify(technicalProfileService).getById(profileId);
+    }
+
+    @Test
+    void searchShouldReturnOkStatusAndPaginatedProfiles() {
+        UUID profileId = UUID.randomUUID();
+        QueryRequest query = new QueryRequest(null, null);
+
+        TechnicalProfileResponse item = TechnicalProfileResponse.builder()
+                .id(profileId)
+                .name("Ana Lead")
+                .email("ana@example.com")
+                .role(TechnicalRole.TECH_LEAD)
+                .experienceLevel(ExperienceLevel.LEAD)
+                .hourlyRate(new BigDecimal("140.00"))
+                .currency("PEN")
+                .isActive(true)
+                .build();
+
+        PageMeta meta = PageMeta.of(1L, 0, 20);
+        PaginatedResponse<TechnicalProfileResponse> mockPaginated = PaginatedResponse.of("profilesResponse", List.of(item), meta);
+
+        when(technicalProfileService.search(query)).thenReturn(mockPaginated);
+
+        ResponseEntity<PaginatedResponse<TechnicalProfileResponse>> response = controller.search(query);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(1, response.getBody().getItems().size());
+        assertEquals(new BigDecimal("140.00"), response.getBody().getItems().getFirst().hourlyRate());
+        verify(technicalProfileService).search(query);
     }
 }

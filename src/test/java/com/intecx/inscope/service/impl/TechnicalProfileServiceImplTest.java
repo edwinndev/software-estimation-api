@@ -8,6 +8,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.intecx.inscope.common.PaginatedResponse;
+import com.intecx.inscope.common.QueryRequest;
 import com.intecx.inscope.dto.request.profile.CreateTechnicalProfileRequest;
 import com.intecx.inscope.dto.request.profile.UpdateCerRequest;
 import com.intecx.inscope.dto.request.profile.UpdateTechnicalProfileRequest;
@@ -19,8 +21,12 @@ import com.intecx.inscope.exception.ResourceNotFoundException;
 import com.intecx.inscope.mapper.TechnicalProfileMapper;
 import com.intecx.inscope.repository.TechnicalProfileRepository;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -172,5 +178,66 @@ class TechnicalProfileServiceImplTest {
         assertEquals(ExperienceLevel.MID, response.experienceLevel());
         assertEquals(new BigDecimal("55.00"), response.hourlyRate());
         assertEquals(actorId, existing.getUpdatedBy());
+    }
+
+    @Test
+    void getByIdShouldReturnProfileWhenFound() {
+        UUID profileId = UUID.randomUUID();
+        TechnicalProfile entity = TechnicalProfile.builder()
+                .id(profileId)
+                .name("Lucia Gomez")
+                .email("lucia@example.com")
+                .role(TechnicalRole.TECH_LEAD)
+                .experienceLevel(ExperienceLevel.LEAD)
+                .hourlyRate(new BigDecimal("150.00"))
+                .currency("PEN")
+                .isActive(true)
+                .build();
+
+        when(technicalProfileRepository.findByIdAndDeletedAtIsNull(profileId)).thenReturn(Optional.of(entity));
+
+        TechnicalProfileResponse response = technicalProfileService.getById(profileId);
+
+        assertNotNull(response);
+        assertEquals(profileId, response.id());
+        assertEquals("Lucia Gomez", response.name());
+        assertEquals(new BigDecimal("150.00"), response.hourlyRate());
+    }
+
+    @Test
+    void getByIdShouldThrowResourceNotFoundExceptionWhenNotFound() {
+        UUID profileId = UUID.randomUUID();
+        when(technicalProfileRepository.findByIdAndDeletedAtIsNull(profileId)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> technicalProfileService.getById(profileId));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void searchShouldReturnPaginatedProfilesWithCer() {
+        UUID profileId = UUID.randomUUID();
+        TechnicalProfile entity = TechnicalProfile.builder()
+                .id(profileId)
+                .name("Martin Dev")
+                .email("martin@example.com")
+                .role(TechnicalRole.BACKEND)
+                .experienceLevel(ExperienceLevel.SENIOR)
+                .hourlyRate(new BigDecimal("95.00"))
+                .currency("PEN")
+                .isActive(true)
+                .build();
+
+        when(technicalProfileRepository.findAll(any(Specification.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(entity)));
+
+        QueryRequest queryRequest = new QueryRequest(null, null);
+        PaginatedResponse<TechnicalProfileResponse> response = technicalProfileService.search(queryRequest);
+
+        assertNotNull(response);
+        assertNotNull(response.getItems());
+        assertEquals(1, response.getItems().size());
+        TechnicalProfileResponse item = response.getItems().getFirst();
+        assertEquals(profileId, item.id());
+        assertEquals(new BigDecimal("95.00"), item.hourlyRate());
     }
 }

@@ -76,4 +76,42 @@ class TechnicalProfileMapperTest {
         assertEquals("USD", entity.getCurrency());
         assertEquals(false, entity.isActive());
     }
+
+    @Test
+    void toResponseShouldReturnNullWhenEntityIsNull() {
+        assertNull(mapper.toResponse(null));
+    }
+
+    @Test
+    void toResponseShouldMapEntityFieldsAndCerCorrectly() {
+        UUID profileId = UUID.randomUUID();
+        LocalDateTime now = LocalDateTime.now();
+
+        TechnicalProfile entity = TechnicalProfile.builder()
+                .id(profileId)
+                .name("Valeria Lopez")
+                .email("valeria@example.com")
+                .role(TechnicalRole.FUNCTIONAL_ANALYST)
+                .experienceLevel(ExperienceLevel.LEAD)
+                .hourlyRate(new BigDecimal("110.00"))
+                .currency("PEN")
+                .isActive(true)
+                .createdAt(now)
+                .updatedAt(now.plusHours(1))
+                .build();
+
+        TechnicalProfileResponse response = mapper.toResponse(entity);
+
+        assertNotNull(response);
+        assertEquals(profileId, response.id());
+        assertEquals("Valeria Lopez", response.name());
+        assertEquals("valeria@example.com", response.email());
+        assertEquals(TechnicalRole.FUNCTIONAL_ANALYST, response.role());
+        assertEquals(ExperienceLevel.LEAD, response.experienceLevel());
+        assertEquals(new BigDecimal("110.00"), response.hourlyRate());
+        assertEquals("PEN", response.currency());
+        assertTrue(response.isActive());
+        assertEquals(now, response.createdAt());
+        assertEquals(now.plusHours(1), response.updatedAt());
+    }
 }
