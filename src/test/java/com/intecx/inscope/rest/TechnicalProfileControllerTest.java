@@ -2,6 +2,7 @@ package com.intecx.inscope.rest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -206,6 +207,21 @@ class TechnicalProfileControllerTest {
         assertEquals(1, response.getBody().getItems().size());
         assertEquals(new BigDecimal("140.00"), response.getBody().getItems().getFirst().hourlyRate());
         verify(technicalProfileService).search(query);
+    }
+
+    @Test
+    void searchShouldReturnOkStatusWhenQueryIsNull() {
+        PageMeta meta = PageMeta.of(0L, 0, 20);
+        PaginatedResponse<TechnicalProfileResponse> mockPaginated = PaginatedResponse.of("profilesResponse", List.of(), meta);
+
+        when(technicalProfileService.search(null)).thenReturn(mockPaginated);
+
+        ResponseEntity<PaginatedResponse<TechnicalProfileResponse>> response = controller.search(null);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().getItems().isEmpty());
+        verify(technicalProfileService).search(null);
     }
 
     @Test
