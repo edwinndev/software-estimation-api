@@ -17,6 +17,7 @@ import com.intecx.inscope.dto.response.TechnicalProfileResponse;
 import com.intecx.inscope.entity.TechnicalProfile;
 import com.intecx.inscope.enumeration.ExperienceLevel;
 import com.intecx.inscope.enumeration.TechnicalRole;
+import com.intecx.inscope.exception.ConflictException;
 import com.intecx.inscope.exception.ResourceNotFoundException;
 import com.intecx.inscope.mapper.TechnicalProfileMapper;
 import com.intecx.inscope.repository.TechnicalProfileRepository;
@@ -239,5 +240,63 @@ class TechnicalProfileServiceImplTest {
         TechnicalProfileResponse item = response.getItems().getFirst();
         assertEquals(profileId, item.id());
         assertEquals(new BigDecimal("95.00"), item.hourlyRate());
+    }
+
+    @Test
+    void createShouldThrowConflictExceptionWhenEmailAlreadyExists() {
+        UUID actorId = UUID.randomUUID();
+        CreateTechnicalProfileRequest request = CreateTechnicalProfileRequest.builder()
+                .name("Duplicate User")
+                .email("duplicate@example.com")
+                .role(TechnicalRole.BACKEND)
+                .experienceLevel(ExperienceLevel.MID)
+                .hourlyRate(new BigDecimal("80.00"))
+                .currency("PEN")
+                .build();
+
+        when(technicalProfileRepository.existsByEmailIgnoreCaseAndDeletedAtIsNull("duplicate@example.com"))
+                .thenReturn(true);
+
+        ConflictException ex = assertThrows(
+                ConflictException.class,
+                () -> technicalProfileService.create(request, actorId)
+        );
+        assertEquals("Ya existe un perfil técnico registrado con el correo electrónico proporcionado", ex.getMessage());
+    }
+
+    @Test
+    void updateShouldThrowConflictExceptionWhenEmailAlreadyExistsOnAnotherProfile() {
+        UUID actorId = UUID.randomUUID();
+        UUID profileId = UUID.randomUUID();
+        TechnicalProfile existing = TechnicalProfile.builder()
+                .id(profileId)
+                .name("Original Name")
+                .email("original@example.com")
+                .role(TechnicalRole.FRONTEND)
+                .experienceLevel(ExperienceLevel.MID)
+                .hourlyRate(new BigDecimal("70.00"))
+                .currency("PEN")
+                .isActive(true)
+                .build();
+
+        UpdateTechnicalProfileRequest request = UpdateTechnicalProfileRequest.builder()
+                .name("Updated Name")
+                .email("existing.other@example.com")
+                .role(TechnicalRole.FRONTEND)
+                .experienceLevel(ExperienceLevel.MID)
+                .hourlyRate(new BigDecimal("70.00"))
+                .currency("PEN")
+                .isActive(true)
+                .build();
+
+        when(technicalProfileRepository.findByIdAndDeletedAtIsNull(profileId)).thenReturn(Optional.of(existing));
+        when(technicalProfileRepository.existsByEmailIgnoreCaseAndDeletedAtIsNullAndIdNot("existing.other@example.com", profileId))
+                .thenReturn(true);
+
+        ConflictException ex = assertThrows(
+                ConflictException.class,
+                () -> technicalProfileService.update(profileId, request, actorId)
+        );
+        assertEquals("Ya existe un perfil técnico registrado con el correo electrónico proporcionado", ex.getMessage());
     }
 }
