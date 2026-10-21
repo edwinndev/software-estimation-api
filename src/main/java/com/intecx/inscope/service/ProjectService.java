@@ -14,6 +14,8 @@ public interface ProjectService {
 
     PaginatedResponse<ProjectResponse> search(QueryRequest query);
 
+    ProjectResponse getById(UUID id);
+
     ProjectResponse create(CreateProjectRequest request, UUID actorId);
 
     ProjectResponse update(UUID id, UpdateProjectRequest request, UUID actorId);

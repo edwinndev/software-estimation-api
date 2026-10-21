@@ -1,5 +1,6 @@
 package com.intecx.inscope.dto.response;
 
+import com.intecx.inscope.enumeration.SprintUnit;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -11,7 +12,7 @@ public record ProjectEstimationResponse(
         Integer baseEffortPoints,
         BigDecimal totalEffortHours,
         BigDecimal totalTime,
-        String timeUnit,
+        SprintUnit timeUnit,
         BigDecimal totalCost,
         LocalDateTime createdAt
 ) {

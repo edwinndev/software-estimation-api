@@ -6,9 +6,9 @@ import com.intecx.inscope.dto.request.project.CreateProjectRequest;
 import com.intecx.inscope.dto.request.project.ProjectContingencyRequest;
 import com.intecx.inscope.dto.request.project.UpdateProjectRequest;
 import com.intecx.inscope.dto.request.project.UpdateProjectStatusRequest;
+import com.intecx.inscope.dto.response.ProjectContingencyResponse;
 import com.intecx.inscope.dto.response.ProjectResponse;
 import com.intecx.inscope.dto.response.ProjectStatusHistoryResponse;
-import com.intecx.inscope.dto.response.project.ProjectContingencyResponse;
 import com.intecx.inscope.security.UserPrincipal;
 import com.intecx.inscope.service.ProjectEstimationService;
 import com.intecx.inscope.service.ProjectService;
@@ -43,9 +43,9 @@ public class ProjectController {
     private final ProjectService projectService;
     private final ProjectEstimationService projectEstimationService;
 
-    @Operation(summary = "Buscar proyectos con sus estimaciones guardadas")
+    @Operation(summary = "Búsqueda paginada y filtrado de proyectos")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Listado paginado de proyectos obtenido"),
+            @ApiResponse(responseCode = "200", description = "Listado paginado de proyectos obtenido exitosamente"),
             @ApiResponse(responseCode = "400", description = "Filtros o criterios de búsqueda inválidos")
     })
     @PostMapping("/search")
@@ -55,6 +55,17 @@ public class ProjectController {
     ) {
         PaginatedResponse<ProjectResponse> response = projectService.search(query);
         return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "Obtener un proyecto por su ID")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Proyecto encontrado exitosamente"),
+            @ApiResponse(responseCode = "404", description = "Proyecto no encontrado")
+    })
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('project:read')")
+    public ResponseEntity<ProjectResponse> getById(@PathVariable UUID id) {
+        return ResponseEntity.ok(projectService.getById(id));
     }
 
     @Operation(summary = "Registrar un proyecto en estado Borrador")
