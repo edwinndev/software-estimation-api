@@ -1,4 +1,4 @@
-package com.intecx.inscope.dto.response.project;
+package com.intecx.inscope.dto.response;
 
 import com.intecx.inscope.enumeration.RiskLevel;
 import java.math.BigDecimal;

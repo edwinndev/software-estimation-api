@@ -1,4 +1,4 @@
-package com.intecx.inscope.service;
+package com.intecx.inscope.service.support;
 
 import com.intecx.inscope.dto.response.CostAmountResponse;
 import com.intecx.inscope.exception.BadRequestException;

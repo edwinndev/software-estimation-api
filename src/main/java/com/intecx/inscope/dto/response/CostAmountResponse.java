@@ -1,6 +1,11 @@
 package com.intecx.inscope.dto.response;
 
 import java.math.BigDecimal;
+import lombok.Builder;
 
-public record CostAmountResponse(BigDecimal amount, String currency) {
+@Builder
+public record CostAmountResponse(
+        BigDecimal amount,
+        String currency
+) {
 }

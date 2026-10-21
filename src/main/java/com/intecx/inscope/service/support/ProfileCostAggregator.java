@@ -1,7 +1,8 @@
-package com.intecx.inscope.service;
+package com.intecx.inscope.service.support;
 
 import com.intecx.inscope.dto.response.CostAmountResponse;
 import com.intecx.inscope.dto.response.ProfileCostResponse;
+import com.intecx.inscope.dto.response.TaskProfileCostResponse;
 import com.intecx.inscope.exception.BadRequestException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,13 +19,13 @@ public class ProfileCostAggregator {
 
     private final CostAggregator costAggregator;
 
-    public List<ProfileCostResponse> aggregate(Collection<ProfileCostContribution> contributions) {
+    public List<ProfileCostResponse> aggregate(Collection<TaskProfileCostResponse> contributions) {
         if (contributions == null || contributions.isEmpty()) {
             throw new BadRequestException("Se requiere al menos una contribución para desglosar los costos");
         }
 
         Map<UUID, List<CostAmountResponse>> costsByProfile = new LinkedHashMap<>();
-        for (ProfileCostContribution contribution : contributions) {
+        for (TaskProfileCostResponse contribution : contributions) {
             if (contribution == null) {
                 throw new BadRequestException("Las contribuciones no pueden contener elementos nulos");
             }
