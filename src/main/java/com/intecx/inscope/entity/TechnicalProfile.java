@@ -1,5 +1,6 @@
 package com.intecx.inscope.entity;
 
+import com.intecx.inscope.enumeration.CurrencyCode;
 import com.intecx.inscope.enumeration.ExperienceLevel;
 import com.intecx.inscope.enumeration.TechnicalRole;
 import jakarta.persistence.Column;
@@ -54,8 +55,9 @@ public class TechnicalProfile extends BaseAuditEntity {
     private BigDecimal hourlyRate;
 
     @Builder.Default
+    @Enumerated(EnumType.STRING)
     @Column(name = "currency", nullable = false, length = 3)
-    private String currency = "PEN";
+    private CurrencyCode currency = CurrencyCode.PEN;
 
     @Builder.Default
     @Column(name = "is_active", nullable = false)

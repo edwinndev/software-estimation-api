@@ -14,6 +14,7 @@ import com.intecx.inscope.dto.request.profile.ToggleProfileStatusRequest;
 import com.intecx.inscope.dto.request.profile.UpdateCerRequest;
 import com.intecx.inscope.dto.request.profile.UpdateTechnicalProfileRequest;
 import com.intecx.inscope.dto.response.TechnicalProfileResponse;
+import com.intecx.inscope.enumeration.CurrencyCode;
 import com.intecx.inscope.enumeration.ExperienceLevel;
 import com.intecx.inscope.enumeration.TechnicalRole;
 import com.intecx.inscope.security.UserPrincipal;
@@ -55,7 +56,7 @@ class TechnicalProfileControllerTest {
                 .role(TechnicalRole.BACKEND)
                 .experienceLevel(ExperienceLevel.SENIOR)
                 .hourlyRate(new BigDecimal("90.00"))
-                .currency("PEN")
+                .currency(CurrencyCode.PEN)
                 .build();
 
         TechnicalProfileResponse mockResponse = TechnicalProfileResponse.builder()
@@ -65,7 +66,7 @@ class TechnicalProfileControllerTest {
                 .role(TechnicalRole.BACKEND)
                 .experienceLevel(ExperienceLevel.SENIOR)
                 .hourlyRate(new BigDecimal("90.00"))
-                .currency("PEN")
+                .currency(CurrencyCode.PEN)
                 .isActive(true)
                 .build();
 
@@ -90,7 +91,7 @@ class TechnicalProfileControllerTest {
 
         UpdateCerRequest request = UpdateCerRequest.builder()
                 .hourlyRate(new BigDecimal("120.00"))
-                .currency("PEN")
+                .currency(CurrencyCode.PEN)
                 .build();
 
         TechnicalProfileResponse mockResponse = TechnicalProfileResponse.builder()
@@ -100,7 +101,7 @@ class TechnicalProfileControllerTest {
                 .role(TechnicalRole.BACKEND)
                 .experienceLevel(ExperienceLevel.SENIOR)
                 .hourlyRate(new BigDecimal("120.00"))
-                .currency("PEN")
+                .currency(CurrencyCode.PEN)
                 .isActive(true)
                 .build();
 
@@ -127,7 +128,7 @@ class TechnicalProfileControllerTest {
                 .role(TechnicalRole.FULLSTACK)
                 .experienceLevel(ExperienceLevel.LEAD)
                 .hourlyRate(new BigDecimal("130.00"))
-                .currency("PEN")
+                .currency(CurrencyCode.PEN)
                 .isActive(true)
                 .build();
 
@@ -138,7 +139,7 @@ class TechnicalProfileControllerTest {
                 .role(TechnicalRole.FULLSTACK)
                 .experienceLevel(ExperienceLevel.LEAD)
                 .hourlyRate(new BigDecimal("130.00"))
-                .currency("PEN")
+                .currency(CurrencyCode.PEN)
                 .isActive(true)
                 .build();
 
@@ -163,7 +164,7 @@ class TechnicalProfileControllerTest {
                 .role(TechnicalRole.QA)
                 .experienceLevel(ExperienceLevel.MID)
                 .hourlyRate(new BigDecimal("70.00"))
-                .currency("PEN")
+                .currency(CurrencyCode.PEN)
                 .isActive(true)
                 .build();
 
@@ -190,7 +191,7 @@ class TechnicalProfileControllerTest {
                 .role(TechnicalRole.TECH_LEAD)
                 .experienceLevel(ExperienceLevel.LEAD)
                 .hourlyRate(new BigDecimal("140.00"))
-                .currency("PEN")
+                .currency(CurrencyCode.PEN)
                 .isActive(true)
                 .build();
 
@@ -226,7 +227,7 @@ class TechnicalProfileControllerTest {
                 .role(TechnicalRole.BACKEND)
                 .experienceLevel(ExperienceLevel.SENIOR)
                 .hourlyRate(new BigDecimal("85.00"))
-                .currency("PEN")
+                .currency(CurrencyCode.PEN)
                 .isActive(false)
                 .build();
 

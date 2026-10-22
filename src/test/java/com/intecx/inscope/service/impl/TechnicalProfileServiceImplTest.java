@@ -17,6 +17,7 @@ import com.intecx.inscope.dto.request.profile.UpdateCerRequest;
 import com.intecx.inscope.dto.request.profile.UpdateTechnicalProfileRequest;
 import com.intecx.inscope.dto.response.TechnicalProfileResponse;
 import com.intecx.inscope.entity.TechnicalProfile;
+import com.intecx.inscope.enumeration.CurrencyCode;
 import com.intecx.inscope.enumeration.ExperienceLevel;
 import com.intecx.inscope.enumeration.TechnicalRole;
 import com.intecx.inscope.exception.ConflictException;
@@ -65,7 +66,7 @@ class TechnicalProfileServiceImplTest {
                 .role(role)
                 .experienceLevel(ExperienceLevel.MID)
                 .hourlyRate(new BigDecimal("80.00"))
-                .currency("PEN")
+                .currency(CurrencyCode.PEN)
                 .build();
 
         when(technicalProfileRepository.existsByEmailIgnoreCaseAndDeletedAtIsNull("alex.tester@example.com"))
@@ -86,7 +87,7 @@ class TechnicalProfileServiceImplTest {
         assertEquals(role, response.role());
         assertEquals(ExperienceLevel.MID, response.experienceLevel());
         assertEquals(new BigDecimal("80.00"), response.hourlyRate());
-        assertEquals("PEN", response.currency());
+        assertEquals(CurrencyCode.PEN, response.currency());
         assertTrue(response.isActive());
 
         ArgumentCaptor<TechnicalProfile> captor = ArgumentCaptor.forClass(TechnicalProfile.class);
@@ -108,13 +109,13 @@ class TechnicalProfileServiceImplTest {
                 .role(TechnicalRole.FRONTEND)
                 .experienceLevel(ExperienceLevel.MID)
                 .hourlyRate(new BigDecimal("65.00"))
-                .currency("PEN")
+                .currency(CurrencyCode.PEN)
                 .isActive(true)
                 .build();
 
         UpdateCerRequest request = UpdateCerRequest.builder()
                 .hourlyRate(new BigDecimal("95.00"))
-                .currency("usd")
+                .currency(CurrencyCode.PEN)
                 .build();
 
         when(technicalProfileRepository.findByIdAndDeletedAtIsNull(profileId)).thenReturn(Optional.of(existing));
@@ -124,7 +125,7 @@ class TechnicalProfileServiceImplTest {
 
         assertNotNull(response);
         assertEquals(new BigDecimal("95.00"), response.hourlyRate());
-        assertEquals("USD", response.currency());
+        assertEquals(CurrencyCode.PEN, response.currency());
         assertEquals(actorId, existing.getUpdatedBy());
         verify(technicalProfileRepository).save(existing);
     }
@@ -135,7 +136,7 @@ class TechnicalProfileServiceImplTest {
         UUID profileId = UUID.randomUUID();
         UpdateCerRequest request = UpdateCerRequest.builder()
                 .hourlyRate(new BigDecimal("100.00"))
-                .currency("PEN")
+                .currency(CurrencyCode.PEN)
                 .build();
 
         when(technicalProfileRepository.findByIdAndDeletedAtIsNull(profileId)).thenReturn(Optional.empty());
@@ -154,7 +155,7 @@ class TechnicalProfileServiceImplTest {
                 .role(TechnicalRole.QA)
                 .experienceLevel(ExperienceLevel.JUNIOR)
                 .hourlyRate(new BigDecimal("40.00"))
-                .currency("PEN")
+                .currency(CurrencyCode.PEN)
                 .isActive(true)
                 .build();
 
@@ -164,7 +165,7 @@ class TechnicalProfileServiceImplTest {
                 .role(TechnicalRole.QA)
                 .experienceLevel(ExperienceLevel.MID)
                 .hourlyRate(new BigDecimal("55.00"))
-                .currency("PEN")
+                .currency(CurrencyCode.PEN)
                 .isActive(true)
                 .build();
 
@@ -193,7 +194,7 @@ class TechnicalProfileServiceImplTest {
                 .role(TechnicalRole.TECH_LEAD)
                 .experienceLevel(ExperienceLevel.LEAD)
                 .hourlyRate(new BigDecimal("150.00"))
-                .currency("PEN")
+                .currency(CurrencyCode.PEN)
                 .isActive(true)
                 .build();
 
@@ -226,7 +227,7 @@ class TechnicalProfileServiceImplTest {
                 .role(TechnicalRole.BACKEND)
                 .experienceLevel(ExperienceLevel.SENIOR)
                 .hourlyRate(new BigDecimal("95.00"))
-                .currency("PEN")
+                .currency(CurrencyCode.PEN)
                 .isActive(true)
                 .build();
 
@@ -253,7 +254,7 @@ class TechnicalProfileServiceImplTest {
                 .role(TechnicalRole.BACKEND)
                 .experienceLevel(ExperienceLevel.MID)
                 .hourlyRate(new BigDecimal("80.00"))
-                .currency("PEN")
+                .currency(CurrencyCode.PEN)
                 .build();
 
         when(technicalProfileRepository.existsByEmailIgnoreCaseAndDeletedAtIsNull("duplicate@example.com"))
@@ -277,7 +278,7 @@ class TechnicalProfileServiceImplTest {
                 .role(TechnicalRole.FRONTEND)
                 .experienceLevel(ExperienceLevel.MID)
                 .hourlyRate(new BigDecimal("70.00"))
-                .currency("PEN")
+                .currency(CurrencyCode.PEN)
                 .isActive(true)
                 .build();
 
@@ -287,7 +288,7 @@ class TechnicalProfileServiceImplTest {
                 .role(TechnicalRole.FRONTEND)
                 .experienceLevel(ExperienceLevel.MID)
                 .hourlyRate(new BigDecimal("70.00"))
-                .currency("PEN")
+                .currency(CurrencyCode.PEN)
                 .isActive(true)
                 .build();
 
@@ -313,7 +314,7 @@ class TechnicalProfileServiceImplTest {
                 .role(TechnicalRole.QA)
                 .experienceLevel(ExperienceLevel.MID)
                 .hourlyRate(new BigDecimal("60.00"))
-                .currency("PEN")
+                .currency(CurrencyCode.PEN)
                 .isActive(true)
                 .build();
 
@@ -357,7 +358,7 @@ class TechnicalProfileServiceImplTest {
                 .role(TechnicalRole.FRONTEND)
                 .experienceLevel(ExperienceLevel.JUNIOR)
                 .hourlyRate(new BigDecimal("45.00"))
-                .currency("PEN")
+                .currency(CurrencyCode.PEN)
                 .isActive(true)
                 .build();
 

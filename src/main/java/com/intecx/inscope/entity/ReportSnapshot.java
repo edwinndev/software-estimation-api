@@ -1,6 +1,7 @@
 package com.intecx.inscope.entity;
 
 import com.intecx.inscope.enumeration.ProjectStatus;
+import com.intecx.inscope.enumeration.ProjectType;
 import com.intecx.inscope.enumeration.RiskLevel;
 import com.intecx.inscope.enumeration.SprintUnit;
 import jakarta.persistence.Column;
@@ -51,8 +52,9 @@ public class ReportSnapshot {
     @Column(name = "project_status", nullable = false, columnDefinition = "in_scope.project_status")
     private ProjectStatus projectStatus;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "project_type", nullable = false, length = 40)
-    private String projectType;
+    private ProjectType projectType;
 
     @Column(name = "project_owner", nullable = false, length = 201)
     private String projectOwner;

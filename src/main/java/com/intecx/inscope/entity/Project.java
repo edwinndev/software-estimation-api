@@ -1,6 +1,7 @@
 package com.intecx.inscope.entity;
 
 import com.intecx.inscope.enumeration.ProjectStatus;
+import com.intecx.inscope.enumeration.ProjectType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -43,8 +44,9 @@ public class Project extends BaseAuditEntity {
     @Column(name = "description", nullable = false, length = 500)
     private String description = "";
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false, length = 40)
-    private String type;
+    private ProjectType type;
 
     @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
