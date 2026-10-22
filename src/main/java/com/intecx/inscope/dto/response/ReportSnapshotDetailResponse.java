@@ -1,6 +1,7 @@
 package com.intecx.inscope.dto.response;
 
 import com.intecx.inscope.enumeration.ProjectStatus;
+import com.intecx.inscope.enumeration.ProjectType;
 import com.intecx.inscope.enumeration.RiskLevel;
 import com.intecx.inscope.enumeration.SprintUnit;
 import java.math.BigDecimal;
@@ -14,7 +15,7 @@ public record ReportSnapshotDetailResponse(
         UUID projectId,
         String projectName,
         ProjectStatus projectStatus,
-        String projectType,
+        ProjectType projectType,
         String projectOwner,
         Integer baseEffortPoints,
         Integer totalSprints,

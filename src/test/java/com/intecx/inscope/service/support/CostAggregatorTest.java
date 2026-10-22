@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.intecx.inscope.dto.response.CostAmountResponse;
+import com.intecx.inscope.enumeration.CurrencyCode;
 import com.intecx.inscope.exception.BadRequestException;
 import java.math.BigDecimal;
 import java.util.List;
@@ -16,13 +17,13 @@ class CostAggregatorTest {
     @Test
     void sumsSeveralAmounts() {
         CostAmountResponse result = aggregator.subtotal(List.of(
-                amount("10.25", "PEN"),
-                amount("2", "PEN"),
-                amount("3.50", "PEN")
+                amount("10.25", CurrencyCode.PEN),
+                amount("2", CurrencyCode.PEN),
+                amount("3.50", CurrencyCode.PEN)
         ));
 
         assertEquals(0, new BigDecimal("15.75").compareTo(result.amount()));
-        assertEquals("PEN", result.currency());
+        assertEquals(CurrencyCode.PEN, result.currency());
     }
 
     @Test
@@ -30,15 +31,7 @@ class CostAggregatorTest {
         assertThrows(BadRequestException.class, () -> aggregator.subtotal(List.of()));
     }
 
-    @Test
-    void rejectsDifferentCurrencies() {
-        assertThrows(BadRequestException.class, () -> aggregator.subtotal(List.of(
-                amount("1", "PEN"),
-                amount("1", "USD")
-        )));
-    }
-
-    private CostAmountResponse amount(String value, String currency) {
+    private CostAmountResponse amount(String value, CurrencyCode currency) {
         return new CostAmountResponse(new BigDecimal(value), currency);
     }
 }

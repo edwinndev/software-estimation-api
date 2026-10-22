@@ -95,8 +95,8 @@ public class TechnicalProfileServiceImpl implements TechnicalProfileService {
         profile.setRole(request.getRole());
         profile.setExperienceLevel(request.getExperienceLevel());
         profile.setHourlyRate(request.getHourlyRate());
-        if (request.getCurrency() != null && !request.getCurrency().isBlank()) {
-            profile.setCurrency(request.getCurrency().trim().toUpperCase());
+        if (request.getCurrency() != null) {
+            profile.setCurrency(request.getCurrency());
         }
         if (request.getIsActive() != null) {
             profile.setActive(request.getIsActive());
@@ -114,8 +114,8 @@ public class TechnicalProfileServiceImpl implements TechnicalProfileService {
                 .orElseThrow(() -> new ResourceNotFoundException("Perfil técnico no encontrado"));
 
         profile.setHourlyRate(request.getHourlyRate());
-        if (request.getCurrency() != null && !request.getCurrency().isBlank()) {
-            profile.setCurrency(request.getCurrency().trim().toUpperCase());
+        if (request.getCurrency() != null) {
+            profile.setCurrency(request.getCurrency());
         }
         profile.setUpdatedBy(actorId);
 

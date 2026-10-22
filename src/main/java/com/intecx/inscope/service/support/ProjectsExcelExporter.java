@@ -36,7 +36,7 @@ public class ProjectsExcelExporter {
                 Row row = sheet.createRow(rowIdx++);
                 row.createCell(0).setCellValue(project.id() == null ? "" : project.id().toString());
                 row.createCell(1).setCellValue(nullToEmpty(project.name()));
-                row.createCell(2).setCellValue(nullToEmpty(project.type()));
+                row.createCell(2).setCellValue(project.type() == null ? "" : project.type().name());
                 row.createCell(3).setCellValue(project.status() == null ? "" : project.status().name());
                 row.createCell(4).setCellValue(project.startDate() == null ? "" : project.startDate().format(DATE));
                 row.createCell(5).setCellValue(project.plannedDate() == null ? "" : project.plannedDate().format(DATE));
