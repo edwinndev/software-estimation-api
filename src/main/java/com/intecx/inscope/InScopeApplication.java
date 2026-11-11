@@ -12,6 +12,11 @@ import org.springframework.util.StringUtils;
 @EnableScheduling
 public class InScopeApplication {
 
+    static {
+        System.setProperty("io.netty.transport.noNative", "true");
+        System.setProperty("io.netty.handler.ssl.noOpenSsl", "true");
+    }
+
     @PostConstruct
     public void init() {
         TimeZone.setDefault(TimeZone.getTimeZone("America/Lima"));
