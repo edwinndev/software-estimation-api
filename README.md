@@ -108,10 +108,11 @@ docs/             Documentación detallada
 
 Flujo de una petición: `rest` → `service` → `repository` → base de datos, con `dto` entrando y saliendo y `mapper` convirtiendo entre `entity` y `dto`. Si algo falla, `exception` lo convierte en la respuesta de error uniforme.
 
-Hoy solo hay código en `common`, `exception` y `config`, además del esquema y el seed. El resto de carpetas están listas y se llenan por recurso.
+La API también incluye los recursos de historias de usuario y tareas técnicas. Sus rutas y filtros están descritos en `docs/backlog.md`.
 
 ## Docs
 
 - Paginación y filtros: `docs/pagination.md`
 - Errores: `docs/errors.md`
+- Historias y tareas: `docs/backlog.md`
 - Convenciones del agente: `AGENTS.md`
