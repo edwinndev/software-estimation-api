@@ -84,7 +84,7 @@ public class ProjectMapper {
         return Project.builder()
                 .name(request.getName().trim())
                 .description(request.getDescription() == null ? "" : request.getDescription().trim())
-                .type(request.getType().trim())
+                .type(request.getType())
                 .startDate(request.getStartDate())
                 .plannedDate(request.getPlannedDate())
                 .responsible(responsible)
@@ -95,7 +95,7 @@ public class ProjectMapper {
     public void updateEntity(Project project, UpdateProjectRequest request, User responsible, UUID actorId) {
         project.setName(request.getName().trim());
         project.setDescription(request.getDescription() == null ? "" : request.getDescription().trim());
-        project.setType(request.getType().trim());
+        project.setType(request.getType());
         project.setStartDate(request.getStartDate());
         project.setPlannedDate(request.getPlannedDate());
         project.setResponsible(responsible);

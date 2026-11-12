@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.intecx.inscope.dto.request.profile.CreateTechnicalProfileRequest;
 import com.intecx.inscope.dto.response.TechnicalProfileResponse;
 import com.intecx.inscope.entity.TechnicalProfile;
+import com.intecx.inscope.enumeration.CurrencyCode;
 import com.intecx.inscope.enumeration.ExperienceLevel;
 import com.intecx.inscope.enumeration.TechnicalRole;
 import java.math.BigDecimal;
@@ -52,7 +53,7 @@ class TechnicalProfileMapperTest {
         assertEquals(role, entity.getRole());
         assertEquals(ExperienceLevel.SENIOR, entity.getExperienceLevel());
         assertEquals(new BigDecimal("75.50"), entity.getHourlyRate());
-        assertEquals("PEN", entity.getCurrency());
+        assertEquals(CurrencyCode.PEN, entity.getCurrency());
         assertTrue(entity.isActive());
         assertEquals(actorId, entity.getCreatedBy());
     }
@@ -66,14 +67,14 @@ class TechnicalProfileMapperTest {
                 .role(TechnicalRole.FRONTEND)
                 .experienceLevel(ExperienceLevel.MID)
                 .hourlyRate(new BigDecimal("60.00"))
-                .currency("usd")
+                .currency(CurrencyCode.PEN)
                 .isActive(false)
                 .build();
 
         TechnicalProfile entity = mapper.toEntity(request, actorId);
 
         assertNotNull(entity);
-        assertEquals("USD", entity.getCurrency());
+        assertEquals(CurrencyCode.PEN, entity.getCurrency());
         assertEquals(false, entity.isActive());
     }
 
@@ -94,7 +95,7 @@ class TechnicalProfileMapperTest {
                 .role(TechnicalRole.FUNCTIONAL_ANALYST)
                 .experienceLevel(ExperienceLevel.LEAD)
                 .hourlyRate(new BigDecimal("110.00"))
-                .currency("PEN")
+                .currency(CurrencyCode.PEN)
                 .isActive(true)
                 .createdAt(now)
                 .updatedAt(now.plusHours(1))
@@ -109,7 +110,7 @@ class TechnicalProfileMapperTest {
         assertEquals(TechnicalRole.FUNCTIONAL_ANALYST, response.role());
         assertEquals(ExperienceLevel.LEAD, response.experienceLevel());
         assertEquals(new BigDecimal("110.00"), response.hourlyRate());
-        assertEquals("PEN", response.currency());
+        assertEquals(CurrencyCode.PEN, response.currency());
         assertTrue(response.isActive());
         assertEquals(now, response.createdAt());
         assertEquals(now.plusHours(1), response.updatedAt());

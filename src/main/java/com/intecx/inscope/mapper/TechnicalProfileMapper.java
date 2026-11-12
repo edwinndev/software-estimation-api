@@ -3,6 +3,7 @@ package com.intecx.inscope.mapper;
 import com.intecx.inscope.dto.request.profile.CreateTechnicalProfileRequest;
 import com.intecx.inscope.dto.response.TechnicalProfileResponse;
 import com.intecx.inscope.entity.TechnicalProfile;
+import com.intecx.inscope.enumeration.CurrencyCode;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
@@ -35,9 +36,7 @@ public class TechnicalProfileMapper implements BaseMapper<TechnicalProfile, Tech
         }
 
         boolean activeStatus = request.getIsActive() == null || request.getIsActive();
-        String currencyCode = request.getCurrency() != null && !request.getCurrency().isBlank()
-                ? request.getCurrency().trim().toUpperCase()
-                : "PEN";
+        CurrencyCode currencyCode = request.getCurrency() == null ? CurrencyCode.PEN : request.getCurrency();
 
         return TechnicalProfile.builder()
                 .name(request.getName().trim())

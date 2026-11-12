@@ -133,14 +133,14 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Subir o reemplazar el avatar del usuario (PNG, JPEG o JPG)")
+    @Operation(summary = "Subir o reemplazar el avatar propio (PNG, JPEG o JPG)")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Avatar actualizado"),
             @ApiResponse(responseCode = "400", description = "Archivo inválido o formato no permitido"),
+            @ApiResponse(responseCode = "403", description = "Solo puedes modificar tu propio avatar"),
             @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
     })
     @PutMapping(value = "/{id}/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAuthority('user:write')")
     public ResponseEntity<UserResponse> uploadAvatar(
             @PathVariable UUID id,
             @RequestPart("file") MultipartFile file,
@@ -169,13 +169,13 @@ public class UserController {
                 .body(bytes);
     }
 
-    @Operation(summary = "Eliminar el avatar del usuario")
+    @Operation(summary = "Eliminar el avatar propio")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Avatar eliminado"),
+            @ApiResponse(responseCode = "403", description = "Solo puedes modificar tu propio avatar"),
             @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
     })
     @DeleteMapping("/{id}/avatar")
-    @PreAuthorize("hasAuthority('user:write')")
     public ResponseEntity<Void> deleteAvatar(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal

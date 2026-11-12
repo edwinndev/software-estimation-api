@@ -5,6 +5,7 @@ import com.intecx.inscope.dto.response.ProfileCostResponse;
 import com.intecx.inscope.dto.response.ProjectCostResponse;
 import com.intecx.inscope.dto.response.TaskCostResponse;
 import com.intecx.inscope.dto.response.TaskProfileCostResponse;
+import com.intecx.inscope.enumeration.CurrencyCode;
 import com.intecx.inscope.repository.ProjectCostProjection;
 import java.math.BigDecimal;
 import java.util.List;
@@ -19,7 +20,7 @@ public class ProjectCostMapper {
                 .technicalProfileId(row.getTechnicalProfileId())
                 .hours(hours)
                 .hourlyRate(row.getHourlyRate())
-                .cost(new CostAmountResponse(cost, row.getCurrency()))
+                .cost(new CostAmountResponse(cost, CurrencyCode.valueOf(row.getCurrency())))
                 .build();
     }
 

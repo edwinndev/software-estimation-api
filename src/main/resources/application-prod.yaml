@@ -26,6 +26,15 @@ spring:
           enabled: true
           property-sources:
             - endpoint: ${AZURE_KEYVAULT_ENDPOINT}
+              credential:
+                managed-identity-enabled: true
+in-scope:
+  bunny:
+    access-key: ${in.scope.bunny.access.key}
+  jwt:
+    secret: ${in.scope.jwt.secret}
+  cors:
+    allowed-origins: ${in.scope.cors.allowed.origins}
 
 logging:
   level:

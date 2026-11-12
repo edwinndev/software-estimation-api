@@ -1,5 +1,6 @@
 package com.intecx.inscope.dto.response;
 
+import com.intecx.inscope.enumeration.CurrencyCode;
 import com.intecx.inscope.enumeration.ExperienceLevel;
 import com.intecx.inscope.enumeration.TechnicalRole;
 import java.math.BigDecimal;
@@ -15,7 +16,7 @@ public record TechnicalProfileResponse(
         TechnicalRole role,
         ExperienceLevel experienceLevel,
         BigDecimal hourlyRate,
-        String currency,
+        CurrencyCode currency,
         boolean isActive,
         LocalDateTime createdAt,
         LocalDateTime updatedAt

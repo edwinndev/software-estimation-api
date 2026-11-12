@@ -8,6 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.intecx.inscope.entity.Project;
+import com.intecx.inscope.enumeration.CurrencyCode;
 import com.intecx.inscope.exception.ResourceNotFoundException;
 import com.intecx.inscope.mapper.ProjectCostMapper;
 import com.intecx.inscope.repository.ProjectCostProjection;
@@ -63,7 +64,7 @@ class ProjectCostServiceTest {
 
         assertEquals(PROJECT_ID, response.projectId());
         assertEquals(0, new BigDecimal("90").compareTo(response.total().amount()));
-        assertEquals("PEN", response.total().currency());
+        assertEquals(CurrencyCode.PEN, response.total().currency());
         assertEquals(2, response.tasks().size());
         assertEquals(2, response.profiles().size());
     }

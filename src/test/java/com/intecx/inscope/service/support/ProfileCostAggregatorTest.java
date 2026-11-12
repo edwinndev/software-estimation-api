@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.intecx.inscope.dto.response.CostAmountResponse;
 import com.intecx.inscope.dto.response.ProfileCostResponse;
 import com.intecx.inscope.dto.response.TaskProfileCostResponse;
+import com.intecx.inscope.enumeration.CurrencyCode;
 import com.intecx.inscope.exception.BadRequestException;
 import java.math.BigDecimal;
 import java.util.List;
@@ -22,8 +23,8 @@ class ProfileCostAggregatorTest {
     @Test
     void sumsContributionsForSameProfile() {
         List<ProfileCostResponse> result = aggregator.aggregate(List.of(
-                contribution(PROFILE_A, "100", "PEN"),
-                contribution(PROFILE_A, "50", "PEN")
+                contribution(PROFILE_A, "100", CurrencyCode.PEN),
+                contribution(PROFILE_A, "50", CurrencyCode.PEN)
         ));
 
         assertEquals(1, result.size());
@@ -34,9 +35,9 @@ class ProfileCostAggregatorTest {
     @Test
     void aggregatesSeveralProfiles() {
         List<ProfileCostResponse> result = aggregator.aggregate(List.of(
-                contribution(PROFILE_A, "100", "PEN"),
-                contribution(PROFILE_B, "80", "PEN"),
-                contribution(PROFILE_A, "50", "PEN")
+                contribution(PROFILE_A, "100", CurrencyCode.PEN),
+                contribution(PROFILE_B, "80", CurrencyCode.PEN),
+                contribution(PROFILE_A, "50", CurrencyCode.PEN)
         ));
 
         assertEquals(2, result.size());
@@ -49,7 +50,7 @@ class ProfileCostAggregatorTest {
         assertThrows(BadRequestException.class, () -> aggregator.aggregate(List.of()));
     }
 
-    private TaskProfileCostResponse contribution(UUID profileId, String amount, String currency) {
+    private TaskProfileCostResponse contribution(UUID profileId, String amount, CurrencyCode currency) {
         return TaskProfileCostResponse.builder()
                 .technicalProfileId(profileId)
                 .hours(BigDecimal.ONE)

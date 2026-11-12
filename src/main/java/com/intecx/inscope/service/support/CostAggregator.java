@@ -1,16 +1,14 @@
 package com.intecx.inscope.service.support;
 
 import com.intecx.inscope.dto.response.CostAmountResponse;
+import com.intecx.inscope.enumeration.CurrencyCode;
 import com.intecx.inscope.exception.BadRequestException;
 import java.math.BigDecimal;
 import java.util.Collection;
-import java.util.regex.Pattern;
 import org.springframework.stereotype.Component;
 
 @Component
 public class CostAggregator {
-
-    private static final Pattern CURRENCY_PATTERN = Pattern.compile("^[A-Z]{3}$");
 
     public CostAmountResponse subtotal(Collection<CostAmountResponse> amounts) {
         if (amounts == null || amounts.isEmpty()) {
@@ -18,12 +16,12 @@ public class CostAggregator {
         }
 
         BigDecimal subtotal = BigDecimal.ZERO;
-        String currency = null;
+        CurrencyCode currency = null;
         for (CostAmountResponse amount : amounts) {
             validate(amount);
             if (currency == null) {
                 currency = amount.currency();
-            } else if (!currency.equals(amount.currency())) {
+            } else if (currency != amount.currency()) {
                 throw new BadRequestException("No se pueden sumar importes de monedas diferentes");
             }
             subtotal = subtotal.add(amount.amount());
@@ -41,8 +39,8 @@ public class CostAggregator {
         if (amount.amount().signum() < 0) {
             throw new BadRequestException("El importe no puede ser negativo");
         }
-        if (amount.currency() == null || !CURRENCY_PATTERN.matcher(amount.currency()).matches()) {
-            throw new BadRequestException("La moneda es obligatoria y debe contener tres letras mayúsculas");
+        if (amount.currency() == null) {
+            throw new BadRequestException("La moneda es obligatoria");
         }
     }
 }

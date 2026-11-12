@@ -1,6 +1,7 @@
 package com.intecx.inscope.dto.response;
 
 import com.intecx.inscope.enumeration.ProjectStatus;
+import com.intecx.inscope.enumeration.ProjectType;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,7 +13,7 @@ public record ProjectResponse(
         UUID id,
         String name,
         String description,
-        String type,
+        ProjectType type,
         LocalDate startDate,
         LocalDate plannedDate,
         UUID responsibleId,

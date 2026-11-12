@@ -1,10 +1,10 @@
 package com.intecx.inscope.dto.request.profile;
 
+import com.intecx.inscope.enumeration.CurrencyCode;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,6 +25,5 @@ public class UpdateCerRequest {
     @Digits(integer = 10, fraction = 2, message = "El costo estándar (CER) debe tener como máximo 10 dígitos enteros y 2 decimales")
     private BigDecimal hourlyRate;
 
-    @Pattern(regexp = "^[A-Z]{3}$", message = "La moneda debe tener un formato de 3 letras (ISO 4217)")
-    private String currency;
+    private CurrencyCode currency;
 }

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.intecx.inscope.dto.request.profile.CreateTechnicalProfileRequest;
 import com.intecx.inscope.dto.request.profile.UpdateCerRequest;
+import com.intecx.inscope.enumeration.CurrencyCode;
 import com.intecx.inscope.enumeration.ExperienceLevel;
 import com.intecx.inscope.enumeration.TechnicalRole;
 import jakarta.validation.ConstraintViolation;
@@ -34,7 +35,7 @@ class TechnicalProfileValidationTest {
                 .role(TechnicalRole.FRONTEND)
                 .experienceLevel(ExperienceLevel.MID)
                 .hourlyRate(new BigDecimal("75.00"))
-                .currency("PEN")
+                .currency(CurrencyCode.PEN)
                 .build();
 
         Set<ConstraintViolation<CreateTechnicalProfileRequest>> violations = validator.validate(request);
@@ -91,7 +92,7 @@ class TechnicalProfileValidationTest {
     void updateCerRequestShouldFailWhenHourlyRateIsZeroOrNegative() {
         UpdateCerRequest request = UpdateCerRequest.builder()
                 .hourlyRate(BigDecimal.ZERO)
-                .currency("PEN")
+                .currency(CurrencyCode.PEN)
                 .build();
 
         Set<ConstraintViolation<UpdateCerRequest>> violations = validator.validate(request);
@@ -99,15 +100,4 @@ class TechnicalProfileValidationTest {
         assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("hourlyRate")));
     }
 
-    @Test
-    void updateCerRequestShouldFailWhenCurrencyIsNotThreeIsoLetters() {
-        UpdateCerRequest request = UpdateCerRequest.builder()
-                .hourlyRate(new BigDecimal("60.00"))
-                .currency("USDD")
-                .build();
-
-        Set<ConstraintViolation<UpdateCerRequest>> violations = validator.validate(request);
-        assertFalse(violations.isEmpty());
-        assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("currency")));
-    }
 }

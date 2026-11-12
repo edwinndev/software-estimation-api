@@ -16,6 +16,7 @@ import com.intecx.inscope.entity.User;
 import com.intecx.inscope.enumeration.AttachmentType;
 import com.intecx.inscope.exception.BadRequestException;
 import com.intecx.inscope.exception.ConflictException;
+import com.intecx.inscope.exception.ForbiddenException;
 import com.intecx.inscope.exception.ResourceNotFoundException;
 import com.intecx.inscope.mapper.UserMapper;
 import com.intecx.inscope.repository.FileAttachmentRepository;
@@ -195,6 +196,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserResponse uploadAvatar(UUID id, MultipartFile file, UUID actorId) {
+        assertSelf(id, actorId);
         User user = userRepository.findActiveById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
         String extension = AvatarImageSupport.resolveExtension(file);
@@ -248,6 +250,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void deleteAvatar(UUID id, UUID actorId) {
+        assertSelf(id, actorId);
         User user = userRepository.findActiveById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
         FileAttachment avatar = user.getAvatar();
@@ -287,5 +290,11 @@ public class UserServiceImpl implements UserService {
         user.setActive(false);
 
         userRepository.save(user);
+    }
+
+    private void assertSelf(UUID targetId, UUID actorId) {
+        if (!targetId.equals(actorId)) {
+            throw new ForbiddenException("Solo puedes modificar tu propio avatar");
+        }
     }
 }

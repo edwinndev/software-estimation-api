@@ -28,7 +28,7 @@ public class EstimationPdfGenerator {
             document.add(new Paragraph("Reporte de estimación - Intecx InScope", title));
             document.add(new Paragraph(" "));
             document.add(line(body, "Proyecto", snapshot.getProjectName()));
-            document.add(line(body, "Tipo", snapshot.getProjectType()));
+            document.add(line(body, "Tipo", snapshot.getProjectType().name()));
             document.add(line(body, "Estado", snapshot.getProjectStatus().name()));
             document.add(line(body, "Responsable", snapshot.getProjectOwner()));
             document.add(line(body, "Fecha", snapshot.getCreatedAt().format(DATE_TIME)));

@@ -1,5 +1,6 @@
 package com.intecx.inscope.dto.request.project;
 
+import com.intecx.inscope.enumeration.ProjectType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -25,9 +26,8 @@ public class CreateProjectRequest {
     @Size(max = 500, message = "La descripción no puede superar los 500 caracteres")
     private String description;
 
-    @NotBlank(message = "El tipo de proyecto es obligatorio")
-    @Size(max = 40, message = "El tipo de proyecto no puede superar los 40 caracteres")
-    private String type;
+    @NotNull(message = "El tipo de proyecto es obligatorio")
+    private ProjectType type;
 
     @NotNull(message = "La fecha de inicio es obligatoria")
     private LocalDate startDate;
