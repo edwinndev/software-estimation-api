@@ -49,3 +49,5 @@ in-scope:
   jwt:
     expiration-ms: 86400000
     refresh-expiration-ms: 604800000
+  ai:
+    base-url: ${AI_SERVICE_URL:http://localhost:8000}
