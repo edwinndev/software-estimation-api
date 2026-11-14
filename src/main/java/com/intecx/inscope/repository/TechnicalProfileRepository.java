@@ -16,6 +16,8 @@ public interface TechnicalProfileRepository extends JpaRepository<TechnicalProfi
 
     List<TechnicalProfile> findByIdInAndDeletedAtIsNullAndIsActiveTrue(Collection<UUID> ids);
 
+    List<TechnicalProfile> findByDeletedAtIsNullAndIsActiveTrue();
+
     boolean existsByEmailIgnoreCaseAndDeletedAtIsNull(String email);
 
     boolean existsByEmailIgnoreCaseAndDeletedAtIsNullAndIdNot(String email, UUID id);
